@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Stream Solver - Indofinity</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar untuk tampilan dark */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans p-4 md:p-8 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-8 flex items-center justify-between border-b border-slate-700 pb-4">
+        <div>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                Wordle Stream Solver
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">Alat bantu interaktif untuk Live TikTok & Indofinity (Vanilla JS)</p>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- KOLOM KIRI: SETTING, SARAN, & SOLVER -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Kontrol Utama -->
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700/50">
+                <div class="flex flex-wrap items-end gap-4 mb-4 sm:mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Panjang Huruf</label>
+                        <div class="flex flex-wrap gap-2" id="length-buttons-container">
+                            <!-- Tombol panjang huruf akan di-render dari JS -->
+                        </div>
+                        <div class="mt-3 flex items-center gap-2">
+                            <input type="checkbox" id="auto-switch-toggle" class="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-600 rounded focus:ring-emerald-500 cursor-pointer" checked />
+                            <label for="auto-switch-toggle" class="text-sm text-slate-400 cursor-pointer hover:text-slate-300 select-none">Auto-pindah jumlah huruf dari Live Chat</label>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 transition-all" id="guess-input-container">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Tebakan Baru</label>
+                        <div class="flex gap-2">
+                            <input
+                                type="text"
+                                id="guess-input"
+                                placeholder="Ketik huruf..."
+                                class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 uppercase font-mono shadow-inner"
+                            />
+                            <button 
+                                id="add-guess-btn"
+                                class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+                            >
+                                Tambah
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode Permainan Tambahan -->
+                <div class="border-t border-slate-700 pt-3 sm:pt-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex gap-2 w-fit bg-slate-900 p-1 rounded-lg border border-slate-600 flex-wrap">
+                                <button id="mode-normal-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">Normal</button>
+                                <button id="mode-tipu-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Tukang Tipu</button>
+                                <button id="mode-salahsendiri-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Salah Sendiri</button>
+                                <button id="mode-ketempelan-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Ketempelan</button>
+                                <button id="mode-belahtengah-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Belah Tengah</button>
+                                <button id="mode-buta-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Sekata Buta</button>
+                                <button id="mode-matabatin-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Mata Batin</button>
+                                <button id="mode-jagajarak-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Jaga Jarak</button>
+                                <button id="mode-pepetterus-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Pepet Terus</button>
+                                <button id="mode-sekolor-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Sekolor</button>
+                                <button id="mode-sekolor-hard-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Sekolor Hard</button>
+                                <button id="mode-konekdot-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Konekdot</button>
+                                <button id="mode-kasihpaham-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Kasih Paham</button>
+                                <button id="mode-acakolor-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Acakolor</button>
+                            </div>
+                        </div>
+                        <div class="text-left sm:text-right flex-1">
+                            <p id="mode-desc" class="text-xs text-slate-400 mt-2 sm:mt-0">*Normal: Kata harus memiliki warna yang <b>sama persis</b>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID BERSEBELAHAN: Papan Wordle & Saran Kata -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Papan Wordle -->
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700/50 flex flex-col h-[500px]" id="board-panel">
+                    
+                    <!-- PANEL SEKOLOR (Tersembunyi di mode lain) -->
+                    <div id="sekolor-panel" class="hidden mb-4 bg-slate-900/50 p-3 rounded-xl border border-pink-500/30">
+                        <div class="text-xs text-slate-400 mb-2 text-center font-bold">Pola Warna Target (Klik untuk setel warna)</div>
+                        <div id="sekolor-boxes" class="flex justify-center gap-1 sm:gap-1.5 w-full max-w-full"></div>
+                        <div id="sekolor-legend" class="flex justify-center gap-x-3 gap-y-1 mt-3 text-[10px] text-slate-400 flex-wrap">
+                            <!-- Legend akan diisi oleh JS -->
+                        </div>
+                        
+                        <!-- Dynamic Keyboard Mapping khusus untuk Sekolor Hard -->
+                        <div id="sekolor-hard-mapping" class="hidden mt-4 pt-4 border-t border-orange-500/30">
+                            <div class="text-xs text-orange-300 mb-2 text-center font-bold">Mapping Keyboard (Ketik huruf sesuai warna di game)</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-red-400 rounded-sm shrink-0 shadow-[0_0_8px_rgba(248,113,113,0.4)]"></div>
+                                    <input type="text" id="map-red" value="IOGZXVN" class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 uppercase text-slate-200 focus:border-orange-500 focus:outline-none" placeholder="Cth: IOGZXVN" />
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-sky-400 rounded-sm shrink-0 shadow-[0_0_8px_rgba(56,189,248,0.4)]"></div>
+                                    <input type="text" id="map-blue" value="TYHJKC" class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 uppercase text-slate-200 focus:border-orange-500 focus:outline-none" placeholder="Cth: TYHJKC" />
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-yellow-300 rounded-sm shrink-0 shadow-[0_0_8px_rgba(253,224,71,0.4)]"></div>
+                                    <input type="text" id="map-yellow" value="QRPASLM" class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 uppercase text-slate-200 focus:border-orange-500 focus:outline-none" placeholder="Cth: QRPASLM" />
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-purple-400 rounded-sm shrink-0 shadow-[0_0_8px_rgba(192,132,252,0.4)]"></div>
+                                    <input type="text" id="map-purple" value="WEUDFB" class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 uppercase text-slate-200 focus:border-orange-500 focus:outline-none" placeholder="Cth: WEUDFB" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL KETEMPELAN (Tersembunyi di mode lain) -->
+                    <div id="ketempelan-panel" class="hidden mb-4 bg-slate-900/50 p-3 rounded-xl border border-lime-500/30">
+                        <div class="text-xs text-lime-400 mb-2 text-center font-bold">Mapping Pasangan Huruf Keyboard</div>
+                        <input type="text" id="map-ketempelan" value="AJ EK OD IP UC BT NQ XS YH WM GR ZL FV" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 uppercase text-slate-200 focus:border-lime-500 focus:outline-none text-center font-mono text-xs sm:text-sm tracking-widest" placeholder="Cth: AJ EK OD IP UC BT NQ XS YH WM GR ZL FV" />
+                    </div>
+
+                    <!-- PANEL JAGA JARAK (Tersembunyi di mode lain) -->
+                    <div id="jagajarak-panel" class="hidden mb-4 bg-slate-900/50 p-3 rounded-xl border border-rose-500/30">
+                        <div class="text-xs text-rose-400 mb-2 text-center font-bold">Legenda Jarak Alfabet</div>
+                        <div class="flex justify-center gap-x-3 gap-y-2 text-[10px] text-slate-200 flex-wrap">
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-emerald-500 rounded-sm"></div> Tepat (0)</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-red-500 rounded-sm"></div> Jarak 1-5</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-orange-500 rounded-sm"></div> Jarak 6-10</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-yellow-400 rounded-sm"></div> Jarak 11-15</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-blue-500 rounded-sm"></div> Jarak 16-20</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-purple-500 rounded-sm"></div> Jarak 21-25</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 flex-1 overflow-y-auto p-4 border border-slate-700 bg-slate-900/40 rounded-xl mb-4 transition-colors" id="board-container">
+                        <div class="m-auto w-full text-center py-8 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
+                            Belum ada tebakan. Masukkan kata untuk memulai!
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-between items-start text-xs sm:text-sm gap-3 shrink-0">
+                        <div class="text-slate-400 leading-relaxed" id="board-instructions">
+                            *Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>
+                            *Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.<br/>
+                            <span class="text-emerald-400 text-[10px] sm:text-xs">💡 <b>Alt+R</b> (Reset Papan), <b>/</b> (Input Baru)</span>
+                        </div>
+                        <button 
+                            id="reset-btn"
+                            class="hidden w-full justify-center items-center gap-2 text-red-400 hover:text-red-300 bg-red-400/10 px-3 py-2 rounded-lg transition-colors font-bold"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> 
+                            Bersihkan Papan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hasil Saran Kata -->
+                <div class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-emerald-500/30 ring-1 ring-emerald-500/20 relative overflow-hidden flex flex-col h-[500px]" id="saran-kata-panel">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none transition-colors" id="saran-kata-glow"></div>
+                    <div class="flex items-center justify-between relative z-10 gap-2 shrink-0 mb-3">
+                        <h2 class="text-lg font-bold flex items-center gap-2 truncate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 shrink-0 transition-colors" id="saran-kata-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                            <span class="truncate">Saran Kata</span>
+                        </h2>
+                        <span id="possible-count" class="bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-mono border border-emerald-500/40 shrink-0 transition-colors">
+                            0 kata
+                        </span>
+                    </div>
+
+                    <!-- Input Pencarian Saran -->
+                    <div class="relative z-10 mb-4 shrink-0">
+                        <input type="text" id="search-saran" placeholder="Cari kata spesifik di daftar ini..." class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono shadow-inner transition-colors" />
+                    </div>
+
+                    <div class="bg-slate-900 p-4 rounded-xl flex-1 overflow-y-auto border border-slate-700 relative z-10" id="possible-words-container">
+                        <!-- Kata akan muncul di sini -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pengaturan Kamus -->
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700/50">
+                <details class="group">
+                    <summary class="font-bold cursor-pointer text-slate-300 hover:text-white flex justify-between items-center">
+                        Pengaturan Kamus & Upload
+                        <span class="text-xs font-normal bg-slate-700 px-2 py-1 rounded text-slate-400">Klik untuk buka</span>
+                    </summary>
+                    <div class="mt-4 space-y-4">
+                        
+                        <div class="border-b border-slate-700 pb-4">
+                            <p class="text-sm text-slate-400 mb-2">Pilih Sumber Kamus Utama (Local Server):</p>
+                            <div class="flex gap-2">
+                                <select id="dict-source" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+                                    <option value="IDN.json">IDN.json (Bahasa Indonesia)</option>
+                                    <option value="ENG.json">ENG.json (Format JSON)</option>
+                                    <option value="MIXED">Campuran (IDN + ENG)</option>
+                                    <option value="dictionary.txt">dictionary.txt (Format Teks Per Baris)</option>
+                                </select>
+                                <button id="load-source-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                                    Muat
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-sm text-slate-400 mb-2">Unggah file <b>.json</b> / <b>.txt</b> manual (Pilih banyak file sekaligus jika perlu digabung):</p>
+                            <input 
+                                type="file" 
+                                id="file-upload" 
+                                accept=".json, .txt"
+                                multiple
+                                class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 cursor-pointer"
+                            />
+                        </div>
+                        
+                        <div class="border-t border-slate-700 pt-4">
+                            <p class="text-sm text-slate-400 mb-2">Tempel (paste) daftar kata kustom tambahan (pisahkan dengan baris baru):</p>
+                            <textarea 
+                                id="custom-dict"
+                                class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-slate-300 h-32 focus:outline-none focus:border-cyan-500 font-mono"
+                                placeholder="KOTAK&#10;MOBIL&#10;PINTU"
+                            ></textarea>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: INTEGRASI TIKTOK / INDOFINITY (Sticky Panel) -->
+        <div class="lg:sticky lg:top-4 h-fit w-full">
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700/50 flex flex-col h-[80vh] min-h-[600px] max-h-[900px]">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2 border-b border-slate-700 pb-4 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"></path><path d="M9 8V2"></path><path d="M15 8V2"></path><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"></path></svg>
+                    Integrasi Live
+                </h2>
+                
+                <div class="mb-4 shrink-0">
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Koneksi ke Desktop Indofinity</label>
+                    <div class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-slate-400 mb-3 font-mono text-sm">
+                        ws://localhost:62024
+                    </div>
+                    <button
+                        id="ws-btn"
+                        class="w-full py-2.5 rounded-lg font-bold flex justify-center items-center gap-2 transition-all shadow-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/20"
+                    >
+                        Hubungkan ke Indofinity
+                    </button>
+                    <p id="ws-status" class="hidden text-xs text-emerald-400 mt-2 text-center animate-pulse">
+                        ● Terhubung ke Indofinity
+                    </p>
+                </div>
+
+                <div class="flex-1 bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-y-auto flex flex-col gap-3" id="comments-feed">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 sticky top-0 bg-slate-900 py-1 z-10 shrink-0">Feed Komentar</h3>
+                    <div id="comments-empty" class="text-center text-slate-600 text-sm italic my-auto">
+                        Menunggu komentar masuk...
+                    </div>
+                    <!-- Komentar akan masuk ke sini -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGIKA VANILLA JAVASCRIPT -->
+    <script>
+        // --- STATE APLIKASI ---
+        let wordLength = 5;
+        let guesses = []; 
+        let baseDictionary = [];
+        let dictionary = [];
+        let comments = [];
+        let ws = null;
+        let connectionStatus = 'disconnected'; 
+        let isAutoSwitchLength = true; 
+        let gameMode = 'normal'; // 'normal', 'tipu', 'salah-sendiri', 'ketempelan', 'belah-tengah', 'buta', 'matabatin', 'jagajarak', 'sekolor', 'sekolor-hard', 'konekdot', 'kasihpaham', 'pepetterus', 'acakolor'
+        let sekolorPattern = Array(15).fill('empty'); 
+        const sekolorColors = ['empty', 'blue', 'red', 'yellow', 'purple'];
+        
+        // --- PEPET TERUS STATE ---
+        let pepetState = {
+            atasWord: 'AAA',
+            atasJarak: '',
+            bawahWord: 'ZZZ',
+            bawahJarak: '',
+            containsWord: '' // Filter Kata khusus mode Pepet Terus
+        };
+
+        // --- MATRIKS FONT KONEKDOT 5x7 ---
+        const dotFont = {
+            'A': [0x0E, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11],
+            'B': [0x1E, 0x11, 0x11, 0x1E, 0x11, 0x11, 0x1E],
+            'C': [0x0E, 0x11, 0x10, 0x10, 0x10, 0x11, 0x0E],
+            'D': [0x1E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1E],
+            'E': [0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F],
+            'F': [0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x10],
+            'G': [0x0E, 0x11, 0x10, 0x13, 0x11, 0x11, 0x0E],
+            'H': [0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11],
+            'I': [0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E],
+            'J': [0x07, 0x02, 0x02, 0x02, 0x12, 0x12, 0x0C],
+            'K': [0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11],
+            'L': [0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x1F],
+            'M': [0x11, 0x1B, 0x15, 0x11, 0x11, 0x11, 0x11],
+            'N': [0x11, 0x11, 0x19, 0x15, 0x13, 0x11, 0x11],
+            'O': [0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E],
+            'P': [0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10],
+            'Q': [0x0E, 0x11, 0x11, 0x11, 0x15, 0x12, 0x0D],
+            'R': [0x1E, 0x11, 0x11, 0x1E, 0x14, 0x12, 0x11],
+            'S': [0x0E, 0x11, 0x10, 0x0E, 0x01, 0x11, 0x0E],
+            'T': [0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04],
+            'U': [0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E],
+            'V': [0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04],
+            'W': [0x11, 0x11, 0x11, 0x15, 0x15, 0x1B, 0x11],
+            'X': [0x11, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x11],
+            'Y': [0x11, 0x11, 0x11, 0x0A, 0x04, 0x04, 0x04],
+            'Z': [0x1F, 0x01, 0x02, 0x04, 0x08, 0x10, 0x1F]
+        };
+
+        // --- REFERENSI DOM ---
+        const guessInput = document.getElementById('guess-input');
+        const addGuessBtn = document.getElementById('add-guess-btn');
+        const boardContainer = document.getElementById('board-container');
+        const boardPanel = document.getElementById('board-panel');
+        const boardInstructions = document.getElementById('board-instructions');
+        const resetBtn = document.getElementById('reset-btn');
+        const possibleCount = document.getElementById('possible-count');
+        const possibleWordsContainer = document.getElementById('possible-words-container');
+        const customDictTextarea = document.getElementById('custom-dict');
+        const fileUploadInput = document.getElementById('file-upload');
+        const dictSourceSelect = document.getElementById('dict-source');
+        const loadSourceBtn = document.getElementById('load-source-btn');
+        const wsBtn = document.getElementById('ws-btn');
+        const wsStatusText = document.getElementById('ws-status');
+        const commentsFeed = document.getElementById('comments-feed');
+        const commentsEmpty = document.getElementById('comments-empty');
+        const autoSwitchToggle = document.getElementById('auto-switch-toggle');
+        const searchSaranInput = document.getElementById('search-saran');
+
+        // Referensi Mode Permainan
+        const modeNormalBtn = document.getElementById('mode-normal-btn');
+        const modeTipuBtn = document.getElementById('mode-tipu-btn');
+        const modeSalahSendiriBtn = document.getElementById('mode-salahsendiri-btn');
+        const modeKetempelanBtn = document.getElementById('mode-ketempelan-btn');
+        const modeBelahTengahBtn = document.getElementById('mode-belahtengah-btn');
+        const modeButaBtn = document.getElementById('mode-buta-btn');
+        const modeMataBatinBtn = document.getElementById('mode-matabatin-btn');
+        const modeJagaJarakBtn = document.getElementById('mode-jagajarak-btn');
+        const modePepetTerusBtn = document.getElementById('mode-pepetterus-btn');
+        const modeSekolorBtn = document.getElementById('mode-sekolor-btn');
+        const modeSekolorHardBtn = document.getElementById('mode-sekolor-hard-btn');
+        const modeKonekdotBtn = document.getElementById('mode-konekdot-btn');
+        const modeKasihPahamBtn = document.getElementById('mode-kasihpaham-btn');
+        const modeAcakolorBtn = document.getElementById('mode-acakolor-btn');
+        const modeDesc = document.getElementById('mode-desc');
+        const saranKataPanel = document.getElementById('saran-kata-panel');
+        const saranKataGlow = document.getElementById('saran-kata-glow');
+        const saranKataIcon = document.getElementById('saran-kata-icon');
+        const sekolorPanel = document.getElementById('sekolor-panel');
+        const sekolorBoxes = document.getElementById('sekolor-boxes');
+        const sekolorLegend = document.getElementById('sekolor-legend');
+        const sekolorHardMapping = document.getElementById('sekolor-hard-mapping');
+        const ketempelanPanel = document.getElementById('ketempelan-panel');
+        const mapKetempelanInput = document.getElementById('map-ketempelan');
+        const jagajarakPanel = document.getElementById('jagajarak-panel');
+        const guessInputContainer = document.getElementById('guess-input-container');
+
+        // Referensi Peta Warna Hard Mode
+        const mapRedInput = document.getElementById('map-red');
+        const mapBlueInput = document.getElementById('map-blue');
+        const mapYellowInput = document.getElementById('map-yellow');
+        const mapPurpleInput = document.getElementById('map-purple');
+
+        // --- EVENT LISTENER UNTUK PENCARIAN SARAN KATA ---
+        searchSaranInput.addEventListener('input', updateUI);
+
+        // --- INIT: LOAD KAMUS OTOMATIS ---
+        function loadDictionary(source = 'IDN.json') {
+            possibleWordsContainer.innerHTML = `<div class="text-cyan-400 text-center py-4 text-sm animate-pulse">Sedang memuat daftar kata... Mohon tunggu.</div>`;
+            
+            setTimeout(async () => {
+                try {
+                    let words = [];
+
+                    if (source === 'MIXED') {
+                        const [resIdn, resEng] = await Promise.all([
+                            fetch('./IDN.json').catch(e => null),
+                            fetch('./ENG.json').catch(e => null)
+                        ]);
+                        
+                        let wordsIdn = [];
+                        let wordsEng = [];
+                        
+                        if (resIdn && resIdn.ok) {
+                            try {
+                                const data = await resIdn.json();
+                                wordsIdn = Array.isArray(data) ? data.flat() : (data.words || Object.values(data).flat());
+                            } catch(e) {}
+                        }
+                        if (resEng && resEng.ok) {
+                            try {
+                                const data = await resEng.json();
+                                wordsEng = Array.isArray(data) ? data.flat() : (data.words || Object.values(data).flat());
+                            } catch(e) {}
+                        }
+                        
+                        words = [...wordsIdn, ...wordsEng];
+                        
+                        if (words.length === 0) throw new Error('Kedua file tidak ditemukan atau format JSON tidak dikenal.');
+                    } else {
+                        const response = await fetch(`./${source}`);
+                        if (!response.ok) throw new Error('File tidak ditemukan');
+                        
+                        if (source.endsWith('.json')) {
+                            const data = await response.json();
+                            words = Array.isArray(data) ? data.flat() : (data.words || Object.values(data).flat());
+                        } else if (source.endsWith('.txt')) {
+                            const text = await response.text();
+                            words = text.split(/\r?\n/);
+                        }
+                    }
+                    
+                    const tempSet = new Set();
+                    for(let i = 0; i < words.length; i++) {
+                        const w = words[i];
+                        if (w) {
+                            const trimmed = w.trim();
+                            if (trimmed.length >= 3 && trimmed.length <= 15) {
+                                tempSet.add(trimmed.toUpperCase());
+                            }
+                        }
+                    }
+                    
+                    // Untuk Pepet Terus: Kamus harus selalu terurut abjad secara akurat
+                    baseDictionary = Array.from(tempSet).sort();
+                    updateDictionary();
+                    
+                    let displayName = source === 'MIXED' ? 'Campuran (IDN + ENG)' : source;
+                    possibleWordsContainer.innerHTML = `<div class="text-emerald-400 text-center py-4 text-sm">Kamus <b>${displayName}</b> berhasil dimuat!</div>`;
+                    setTimeout(updateUI, 500);
+                } catch (err) {
+                    console.warn(`Gagal memuat ${source} otomatis:`, err);
+                    let displayName = source === 'MIXED' ? 'Campuran (IDN + ENG)' : source;
+                    possibleWordsContainer.innerHTML = `<div class="text-yellow-400 text-center py-4 text-sm">Gagal memuat kamus <b>${displayName}</b> secara otomatis.<br><br>Pastikan file ada di folder yang sama atau <b>unggah file manual</b> di bawah.</div>`;
+                }
+            }, 50);
+        }
+
+        // --- UPLOAD MULTIPLE FILES ---
+        fileUploadInput.addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            possibleWordsContainer.innerHTML = `<div class="text-cyan-400 text-center py-4 text-sm animate-pulse">Memproses file... Mohon tunggu.</div>`;
+
+            try {
+                let allWords = [];
+                for (const file of files) {
+                    const text = await file.text();
+                    let words = [];
+                    if (file.name.endsWith('.json')) {
+                        const data = JSON.parse(text);
+                        words = Array.isArray(data) ? data.flat() : (data.words || Object.values(data).flat());
+                    } else {
+                        words = text.split(/\r?\n/);
+                    }
+                    allWords = allWords.concat(words);
+                }
+
+                const tempSet = new Set();
+                for(let i = 0; i < allWords.length; i++) {
+                    const w = allWords[i];
+                    if (w) {
+                        const trimmed = w.trim();
+                        if (trimmed.length >= 3 && trimmed.length <= 15) {
+                            tempSet.add(trimmed.toUpperCase());
+                        }
+                    }
+                }
+
+                baseDictionary = Array.from(tempSet).sort();
+                updateDictionary();
+                
+                possibleWordsContainer.innerHTML = `<div class="text-emerald-400 text-center py-4 text-sm">${files.length} File kamus berhasil digabung & dimuat!</div>`;
+                setTimeout(updateUI, 500);
+            } catch (err) {
+                console.error("Gagal mem-parsing file yang diunggah:", err);
+                possibleWordsContainer.innerHTML = '<div class="text-red-400 text-center py-4 text-sm">Format file tidak valid atau gagal dibaca.</div>';
+            }
+        });
+
+        loadSourceBtn.addEventListener('click', () => {
+            loadDictionary(dictSourceSelect.value);
+        });
+
+        // --- BINARY SEARCH UNTUK MENCARI INDEKS KATA DI KAMUS ABJAD ---
+        function getAlphaIndex(word, sortedArr) {
+            let l = 0, r = sortedArr.length - 1;
+            while (l <= r) {
+                let m = Math.floor((l + r) / 2);
+                if (sortedArr[m] === word) return m;
+                if (sortedArr[m] < word) l = m + 1;
+                else r = m - 1;
+            }
+            return l; 
+        }
+
+        // --- FUNGSI GENERATE SVG KONEKDOT ---
+        function generateKonekdotSVG(guessStr, targetStr) {
+            const dotSize = 2.5;
+            const gap = 5;
+            const letterWidth = 5 * gap;
+            const letterSpacing = 8;
+            const width = guessStr.length * letterWidth + (guessStr.length - 1) * letterSpacing;
+            const height = 7 * gap;
+
+            let svg = `<svg width="100%" height="auto" viewBox="0 0 ${width} ${height}" style="max-height: 45px; display: block; margin: 0 auto;" xmlns="http://www.w3.org/2000/svg">`;
+            
+            for (let i = 0; i < guessStr.length; i++) {
+                let gChar = guessStr[i];
+                let tChar = targetStr[i];
+                let gFont = dotFont[gChar] || Array(7).fill(0);
+                let tFont = dotFont[tChar] || Array(7).fill(0);
+
+                let xOffset = i * (letterWidth + letterSpacing);
+                
+                for (let r = 0; r < 7; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        let bitMask = 1 << (4 - c);
+                        let gBit = (gFont[r] & bitMask) !== 0;
+                        let tBit = (tFont[r] & bitMask) !== 0;
+
+                        if (gBit) {
+                            let color = tBit ? '#10b981' : '#ef4444'; // Emerald/Green or Red
+                            // Menambahkan warna Kuning jika tebakan pixel salah, tapi hurufnya ada di target (opsional visual)
+                            if (!tBit && targetStr.includes(gChar)) {
+                                color = '#facc15'; 
+                            }
+                            svg += `<circle cx="${xOffset + c*gap + dotSize}" cy="${r*gap + dotSize}" r="${dotSize}" fill="${color}" />`;
+                        }
+                    }
+                }
+            }
+            svg += `</svg>`;
+            return svg;
+        }
+
+        // --- FUNGSI GET PAIR UNTUK KETEMPELAN ---
+        function getPairForChar(char, mappingString) {
+            const pairs = mappingString.toUpperCase().split(/[\s,]+/).filter(p => p.length > 0);
+            return pairs.find(p => p.includes(char)) || char;
+        }
+
+        // --- FUNGSI MODE PERMAINAN ---
+        function setGameMode(mode) {
+            gameMode = mode;
+            
+            // Reset Button Classes
+            modeNormalBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeTipuBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeSalahSendiriBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeKetempelanBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeBelahTengahBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeButaBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeMataBatinBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeJagaJarakBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modePepetTerusBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeSekolorBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeSekolorHardBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeKonekdotBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeKasihPahamBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeAcakolorBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            
+            // Reset Container Classes
+            boardContainer.classList.remove('border-red-500/50', 'bg-red-900/10', 'border-indigo-500/50', 'bg-indigo-900/10', 'border-slate-700', 'bg-slate-900/40', 'border-pink-500/50', 'bg-pink-900/10', 'border-orange-500/50', 'bg-orange-900/10', 'border-slate-500/50', 'bg-slate-800/50', 'border-amber-500/50', 'bg-amber-900/10', 'border-teal-500/50', 'bg-teal-900/10', 'border-stone-500/50', 'bg-stone-900/10', 'border-lime-500/50', 'bg-lime-900/10', 'border-rose-500/50', 'bg-rose-900/10', 'border-fuchsia-500/50', 'bg-fuchsia-900/10', 'border-sky-500/50', 'bg-sky-900/10', 'border-cyan-500/50', 'bg-cyan-900/10');
+            saranKataPanel.classList.remove('border-red-500/30', 'ring-red-500/20', 'border-emerald-500/30', 'ring-emerald-500/20', 'border-indigo-500/30', 'ring-indigo-500/20', 'border-pink-500/30', 'ring-pink-500/20', 'border-orange-500/30', 'ring-orange-500/20', 'border-slate-500/30', 'ring-slate-500/20', 'border-amber-500/30', 'ring-amber-500/20', 'border-teal-500/30', 'ring-teal-500/20', 'border-stone-500/30', 'ring-stone-500/20', 'border-lime-500/30', 'ring-lime-500/20', 'border-rose-500/30', 'ring-rose-500/20', 'border-fuchsia-500/30', 'ring-fuchsia-500/20', 'border-sky-500/30', 'ring-sky-500/20', 'border-cyan-500/30', 'ring-cyan-500/20');
+            saranKataGlow.classList.remove('bg-red-500/5', 'bg-emerald-500/5', 'bg-indigo-500/5', 'bg-pink-500/5', 'bg-orange-500/5', 'bg-slate-500/5', 'bg-amber-500/5', 'bg-teal-500/5', 'bg-stone-500/5', 'bg-lime-500/5', 'bg-rose-500/5', 'bg-fuchsia-500/5', 'bg-sky-500/5', 'bg-cyan-500/5');
+            saranKataIcon.classList.remove('text-red-400', 'text-emerald-400', 'text-indigo-400', 'text-pink-400', 'text-orange-400', 'text-slate-400', 'text-amber-400', 'text-teal-400', 'text-stone-400', 'text-lime-400', 'text-rose-400', 'text-fuchsia-400', 'text-sky-400', 'text-cyan-400');
+            possibleCount.classList.remove('bg-red-500/20', 'text-red-400', 'border-red-500/40', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/40', 'bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500/40', 'bg-pink-500/20', 'text-pink-400', 'border-pink-500/40', 'bg-orange-500/20', 'text-orange-400', 'border-orange-500/40', 'bg-slate-500/20', 'text-slate-300', 'border-slate-500/40', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/40', 'bg-teal-500/20', 'text-teal-400', 'border-teal-500/40', 'bg-stone-500/20', 'text-stone-400', 'border-stone-500/40', 'bg-lime-500/20', 'text-lime-400', 'border-lime-500/40', 'bg-rose-500/20', 'text-rose-400', 'border-rose-500/40', 'bg-fuchsia-500/20', 'text-fuchsia-400', 'border-fuchsia-500/40', 'bg-sky-500/20', 'text-sky-400', 'border-sky-500/40', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/40');
+            
+            sekolorPanel.classList.add('hidden');
+            sekolorHardMapping.classList.add('hidden');
+            ketempelanPanel.classList.add('hidden');
+            jagajarakPanel.classList.add('hidden');
+
+            const instructionSuffix = '<br/><span class="text-emerald-400 text-[10px] sm:text-xs">💡 <b>Alt+R</b> (Reset Papan), <b>/</b> (Input Baru)</span>';
+
+            if (mode === 'normal') {
+                guessInputContainer.classList.remove('hidden');
+                modeNormalBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-emerald-500 text-white shadow-lg shadow-emerald-500/30';
+                modeDesc.innerHTML = '*Normal: Kata harus memiliki warna yang <b>sama persis</b>.';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-slate-700', 'bg-slate-900/40');
+                saranKataPanel.classList.add('border-emerald-500/30', 'ring-emerald-500/20');
+                saranKataGlow.classList.add('bg-emerald-500/5');
+                saranKataIcon.classList.add('text-emerald-400');
+                possibleCount.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/40');
+                
+            } else if (mode === 'tipu') {
+                guessInputContainer.classList.remove('hidden');
+                modeTipuBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-red-500 text-white shadow-lg shadow-red-500/30';
+                modeDesc.innerHTML = '<span class="text-red-400">*Tukang Tipu: Warna di layar harus <b>100% bohong</b>. (Lebih Akurat).</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-red-500/50', 'bg-red-900/10');
+                saranKataPanel.classList.add('border-red-500/30', 'ring-red-500/20');
+                saranKataGlow.classList.add('bg-red-500/5');
+                saranKataIcon.classList.add('text-red-400');
+                possibleCount.classList.add('bg-red-500/20', 'text-red-400', 'border-red-500/40');
+                
+            } else if (mode === 'salah-sendiri') {
+                guessInputContainer.classList.remove('hidden');
+                modeSalahSendiriBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-amber-500 text-white shadow-lg shadow-amber-500/30';
+                modeDesc.innerHTML = '<span class="text-amber-400">*Salah Sendiri: Tepat <b>1 kotak bohong/salah</b> per baris.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-amber-500/50', 'bg-amber-900/10');
+                saranKataPanel.classList.add('border-amber-500/30', 'ring-amber-500/20');
+                saranKataGlow.classList.add('bg-amber-500/5');
+                saranKataIcon.classList.add('text-amber-400');
+                possibleCount.classList.add('bg-amber-500/20', 'text-amber-400', 'border-amber-500/40');
+                
+            } else if (mode === 'ketempelan') {
+                guessInputContainer.classList.remove('hidden');
+                modeKetempelanBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-lime-500 text-white shadow-lg shadow-lime-500/30';
+                modeDesc.innerHTML = '<span class="text-lime-400">*Ketempelan: Huruf bergandengan di keyboard. Masukkan pasangan yang tepat!</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-lime-500/50', 'bg-lime-900/10');
+                saranKataPanel.classList.add('border-lime-500/30', 'ring-lime-500/20');
+                saranKataGlow.classList.add('bg-lime-500/5');
+                saranKataIcon.classList.add('text-lime-400');
+                possibleCount.classList.add('bg-lime-500/20', 'text-lime-400', 'border-lime-500/40');
+                
+                ketempelanPanel.classList.remove('hidden');
+
+            } else if (mode === 'belah-tengah') {
+                guessInputContainer.classList.remove('hidden');
+                modeBelahTengahBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-teal-500 text-white shadow-lg shadow-teal-500/30';
+                modeDesc.innerHTML = '<span class="text-teal-400">*Belah Tengah: Kata asli 2x lipat lebih panjang. Papan hanya menebak <b>SEPARUH AKHIR</b>.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-teal-500/50', 'bg-teal-900/10');
+                saranKataPanel.classList.add('border-teal-500/30', 'ring-teal-500/20');
+                saranKataGlow.classList.add('bg-teal-500/5');
+                saranKataIcon.classList.add('text-teal-400');
+                possibleCount.classList.add('bg-teal-500/20', 'text-teal-400', 'border-teal-500/40');
+
+            } else if (mode === 'buta') {
+                guessInputContainer.classList.remove('hidden');
+                modeButaBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-indigo-500 text-white shadow-lg shadow-indigo-500/30';
+                modeDesc.innerHTML = '<span class="text-indigo-400">*Sekata Buta: Posisi huruf dirahasiakan. Masukkan skor <b>angka Hijau & Kuning</b> dari total 1 kata.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik <span class="bg-emerald-500 px-1 rounded text-white font-bold">Hijau</span> atau <span class="bg-yellow-500 px-1 rounded text-white font-bold">Kuning</span> untuk atur skor.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-indigo-500/50', 'bg-indigo-900/10');
+                saranKataPanel.classList.add('border-indigo-500/30', 'ring-indigo-500/20');
+                saranKataGlow.classList.add('bg-indigo-500/5');
+                saranKataIcon.classList.add('text-indigo-400');
+                possibleCount.classList.add('bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500/40');
+                
+            } else if (mode === 'matabatin') {
+                guessInputContainer.classList.remove('hidden');
+                modeMataBatinBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-slate-600 text-white shadow-lg shadow-slate-600/30';
+                modeDesc.innerHTML = '<span class="text-slate-300">*Mata Batin: Seperti Sekata Buta, namun <b>posisi kolom warna diacak</b> per ronde. Masukkan angka sesuai layar.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik kotak angka (abu-abu) untuk menyesuaikan skor.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-slate-500/50', 'bg-slate-800/50');
+                saranKataPanel.classList.add('border-slate-500/30', 'ring-slate-500/20');
+                saranKataGlow.classList.add('bg-slate-500/5');
+                saranKataIcon.classList.add('text-slate-400');
+                possibleCount.classList.add('bg-slate-500/20', 'text-slate-300', 'border-slate-500/40');
+                
+            } else if (mode === 'jagajarak') {
+                guessInputContainer.classList.remove('hidden');
+                modeJagaJarakBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-rose-500 text-white shadow-lg shadow-rose-500/30';
+                modeDesc.innerHTML = '<span class="text-rose-400">*Jaga Jarak: Warna menunjukkan <b>jarak alfabet</b> dari jawaban yang benar.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik <b>Kiri/Kanan</b> huruf untuk ubah warna (Abu/Hijau/Merah/Oranye/Kuning/Biru/Ungu).' + instructionSuffix;
+                
+                boardContainer.classList.add('border-rose-500/50', 'bg-rose-900/10');
+                saranKataPanel.classList.add('border-rose-500/30', 'ring-rose-500/20');
+                saranKataGlow.classList.add('bg-rose-500/5');
+                saranKataIcon.classList.add('text-rose-400');
+                possibleCount.classList.add('bg-rose-500/20', 'text-rose-400', 'border-rose-500/40');
+                
+                jagajarakPanel.classList.remove('hidden');
+
+            } else if (mode === 'pepetterus') {
+                guessInputContainer.classList.add('hidden');
+                modePepetTerusBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-sky-600 text-white shadow-lg shadow-sky-600/30';
+                modeDesc.innerHTML = '<span class="text-sky-400">*Pepet Terus: Solver memetakan rasio jarak abjad. Anda bebas atur <b>Panjang Huruf</b> atau pilih "Semua".</span>';
+                boardInstructions.innerHTML = '*Masukkan angka jarak (dari layar) ke dalam kotak angka di sebelah tebakan.<br/>' + instructionSuffix;
+                
+                boardContainer.classList.add('border-sky-500/50', 'bg-sky-900/10');
+                saranKataPanel.classList.add('border-sky-500/30', 'ring-sky-500/20');
+                saranKataGlow.classList.add('bg-sky-500/5');
+                saranKataIcon.classList.add('text-sky-400');
+                possibleCount.classList.add('bg-sky-500/20', 'text-sky-400', 'border-sky-500/40');
+
+            } else if (mode === 'sekolor') {
+                guessInputContainer.classList.remove('hidden');
+                modeSekolorBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-pink-500 text-white shadow-lg shadow-pink-500/30';
+                modeDesc.innerHTML = '<span class="text-pink-400">*Sekolor: Kata target mengikuti <b>Pola Warna Keyboard</b>. Setel pola di atas papan!</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-pink-500/50', 'bg-pink-900/10');
+                saranKataPanel.classList.add('border-pink-500/30', 'ring-pink-500/20');
+                saranKataGlow.classList.add('bg-pink-500/5');
+                saranKataIcon.classList.add('text-pink-400');
+                possibleCount.classList.add('bg-pink-500/20', 'text-pink-400', 'border-pink-500/40');
+                
+                sekolorPanel.classList.remove('hidden');
+                sekolorPanel.classList.remove('border-orange-500/30');
+                sekolorPanel.classList.add('border-pink-500/30');
+                sekolorLegend.innerHTML = `
+                    <span class="flex items-center gap-1"><div class="w-3 h-3 bg-red-400 rounded-sm"></div> Vokal</span>
+                    <span class="flex items-center gap-1"><div class="w-3 h-3 bg-sky-400 rounded-sm"></div> Brs Atas</span>
+                    <span class="flex items-center gap-1"><div class="w-3 h-3 bg-yellow-300 rounded-sm"></div> Tengah</span>
+                    <span class="flex items-center gap-1"><div class="w-3 h-3 bg-purple-400 rounded-sm"></div> Bawah</span>
+                `;
+                renderSekolorPattern();
+                
+            } else if (mode === 'sekolor-hard') {
+                guessInputContainer.classList.remove('hidden');
+                modeSekolorHardBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-orange-500 text-white shadow-lg shadow-orange-500/30';
+                modeDesc.innerHTML = '<span class="text-orange-400">*Sekolor Hard: Warna huruf diacak. <b>Tentukan warna di mapping keyboard!</b></span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf atau <span class="text-emerald-400 font-bold">✔</span> untuk memakai.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-orange-500/50', 'bg-orange-900/10');
+                saranKataPanel.classList.add('border-orange-500/30', 'ring-orange-500/20');
+                saranKataGlow.classList.add('bg-orange-500/5');
+                saranKataIcon.classList.add('text-orange-400');
+                possibleCount.classList.add('bg-orange-500/20', 'text-orange-400', 'border-orange-500/40');
+                
+                sekolorPanel.classList.remove('hidden');
+                sekolorPanel.classList.remove('border-pink-500/30');
+                sekolorPanel.classList.add('border-orange-500/30');
+                sekolorLegend.innerHTML = `
+                    <span class="flex items-center gap-1 text-orange-300 font-bold">*Warna mengikuti input keyboard di bawah</span>
+                `;
+                sekolorHardMapping.classList.remove('hidden');
+                renderSekolorPattern();
+
+            } else if (mode === 'konekdot') {
+                guessInputContainer.classList.remove('hidden');
+                modeKonekdotBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-stone-500 text-white shadow-lg shadow-stone-500/30';
+                modeDesc.innerHTML = '<span class="text-stone-400">*Konekdot: <b>Full Hijau = Hijau</b>. Ada titik Kuning = Kuning. Ada Merah = Abu-abu.</span>';
+                boardInstructions.innerHTML = '*Kata yang <span class="opacity-50">transparan</span> belum dipakai.<br/>*Klik huruf untuk ubah status sesuai pola titik di layar.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-stone-500/50', 'bg-stone-900/10');
+                saranKataPanel.classList.add('border-stone-500/30', 'ring-stone-500/20');
+                saranKataGlow.classList.add('bg-stone-500/5');
+                saranKataIcon.classList.add('text-stone-400');
+                possibleCount.classList.add('bg-stone-500/20', 'text-stone-400', 'border-stone-500/40');
+                
+            } else if (mode === 'kasihpaham') {
+                guessInputContainer.classList.remove('hidden');
+                modeKasihPahamBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/30';
+                modeDesc.innerHTML = '<span class="text-fuchsia-400">*Kasih Paham: Warna acak! <b>Game ini sering BUG/Ngaco</b>, solver akan mentoleransinya otomatis.</span>';
+                boardInstructions.innerHTML = '*Biarkan kotak Abu-abu jika tidak dipakai evaluasi.<br/>*Klik <b>Kiri/Kanan</b> untuk siklus warna: <span class="text-pink-400 font-bold">Pink</span> -> <span class="text-blue-400 font-bold">Biru</span> -> <span class="text-white font-bold">Putih</span>.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-fuchsia-500/50', 'bg-fuchsia-900/10');
+                saranKataPanel.classList.add('border-fuchsia-500/30', 'ring-fuchsia-500/20');
+                saranKataGlow.classList.add('bg-fuchsia-500/5');
+                saranKataIcon.classList.add('text-fuchsia-400');
+                possibleCount.classList.add('bg-fuchsia-500/20', 'text-fuchsia-400', 'border-fuchsia-500/40');
+            } else if (mode === 'acakolor') {
+                guessInputContainer.classList.remove('hidden');
+                modeAcakolorBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-cyan-500 text-white shadow-lg shadow-cyan-500/30';
+                modeDesc.innerHTML = '<span class="text-cyan-400">*Acakolor: Warna acak! Mirip Kasih Paham. Solver otomatis menguji 6 kombinasi warna.</span>';
+                boardInstructions.innerHTML = '*Biarkan kotak Abu-abu jika tidak dipakai evaluasi.<br/>*Klik <b>Kiri/Kanan</b> untuk siklus warna: <span class="text-pink-400 font-bold">Pink</span> -> <span class="text-sky-400 font-bold">Biru Muda</span> -> <span class="text-white font-bold">Putih</span>.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-cyan-500/50', 'bg-cyan-900/10');
+                saranKataPanel.classList.add('border-cyan-500/30', 'ring-cyan-500/20');
+                saranKataGlow.classList.add('bg-cyan-500/5');
+                saranKataIcon.classList.add('text-cyan-400');
+                possibleCount.classList.add('bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/40');
+            }
+            
+            renderBoard(); 
+            updateUI(); 
+        }
+
+        modeNormalBtn.addEventListener('click', () => setGameMode('normal'));
+        modeTipuBtn.addEventListener('click', () => setGameMode('tipu'));
+        modeSalahSendiriBtn.addEventListener('click', () => setGameMode('salah-sendiri'));
+        modeKetempelanBtn.addEventListener('click', () => setGameMode('ketempelan'));
+        modeBelahTengahBtn.addEventListener('click', () => setGameMode('belah-tengah'));
+        modeButaBtn.addEventListener('click', () => setGameMode('buta'));
+        modeMataBatinBtn.addEventListener('click', () => setGameMode('matabatin'));
+        modeJagaJarakBtn.addEventListener('click', () => setGameMode('jagajarak'));
+        modePepetTerusBtn.addEventListener('click', () => setGameMode('pepetterus'));
+        modeSekolorBtn.addEventListener('click', () => setGameMode('sekolor'));
+        modeSekolorHardBtn.addEventListener('click', () => setGameMode('sekolor-hard'));
+        modeKonekdotBtn.addEventListener('click', () => setGameMode('konekdot'));
+        modeKasihPahamBtn.addEventListener('click', () => setGameMode('kasihpaham'));
+        modeAcakolorBtn.addEventListener('click', () => setGameMode('acakolor'));
+
+        // --- RENDER SEKOLOR PATTERN BUILDER ---
+        function renderSekolorPattern() {
+            sekolorBoxes.innerHTML = '';
+            for (let i = 0; i < (wordLength === 'ALL' ? 5 : wordLength); i++) {
+                const btn = document.createElement('button');
+                const color = sekolorPattern[i];
+                let colorClass = 'bg-slate-700 border-slate-600'; // empty
+                if (color === 'blue') colorClass = 'bg-sky-400 border-sky-300 shadow-[0_0_10px_rgba(56,189,248,0.3)]';
+                if (color === 'red') colorClass = 'bg-red-400 border-red-300 shadow-[0_0_10px_rgba(248,113,113,0.3)]';
+                if (color === 'yellow') colorClass = 'bg-yellow-300 border-yellow-200 shadow-[0_0_10px_rgba(253,224,71,0.3)]';
+                if (color === 'purple') colorClass = 'bg-purple-400 border-purple-300 shadow-[0_0_10px_rgba(192,132,252,0.3)]';
+
+                let wL = wordLength === 'ALL' ? 5 : wordLength;
+                let boxSize = '';
+                if (wL > 12) {
+                    boxSize = 'w-7 sm:w-9 aspect-square rounded-md border';
+                } else if (wL > 9) {
+                    boxSize = 'w-9 sm:w-11 aspect-square rounded-lg border-2';
+                } else if (wL > 6) {
+                    boxSize = 'w-11 sm:w-14 aspect-square rounded-lg sm:rounded-xl border-2';
+                } else {
+                    boxSize = 'w-14 sm:w-16 aspect-square rounded-xl border-2';
+                }
+
+                btn.className = `${boxSize} transition-all transform hover:scale-105 active:scale-95 ${colorClass}`;
+                btn.onclick = () => {
+                    let currentIndex = sekolorColors.indexOf(sekolorPattern[i]);
+                    let nextIndex = (currentIndex + 1) % sekolorColors.length;
+                    sekolorPattern[i] = sekolorColors[nextIndex];
+                    renderSekolorPattern();
+                    updateUI();
+                };
+                sekolorBoxes.appendChild(btn);
+            }
+        }
+
+        // Event Listener untuk Mapping Warna Dinamis & Ketempelan
+        ['map-red', 'map-blue', 'map-yellow', 'map-purple'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                if(gameMode === 'sekolor-hard') updateUI();
+            });
+        });
+
+        document.getElementById('map-ketempelan').addEventListener('input', () => {
+            if(gameMode === 'ketempelan') {
+                const mapStr = document.getElementById('map-ketempelan').value;
+                guesses.forEach(g => {
+                    let newPairs = [];
+                    for (let i = 0; i < g.word.length; i++) {
+                        newPairs.push(getPairForChar(g.word[i], mapStr));
+                    }
+                    g.pairs = newPairs;
+                });
+                renderBoard();
+                updateUI();
+            }
+        });
+
+        // --- RENDER TOMBOL PANJANG KATA ---
+        function renderLengthButtons() {
+            const container = document.getElementById('length-buttons-container');
+            container.innerHTML = '';
+            const lengths = ['ALL', 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            
+            lengths.forEach(len => {
+                const btn = document.createElement('button');
+                btn.textContent = len === 'ALL' ? 'Semua' : len;
+                if (wordLength === len) {
+                    btn.className = 'px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg font-bold transition-all bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 text-xs sm:text-sm';
+                } else {
+                    btn.className = 'px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg font-bold transition-all bg-slate-700 text-slate-300 hover:bg-slate-600 text-xs sm:text-sm';
+                }
+                btn.onclick = () => {
+                    wordLength = len;
+                    guesses = []; // Reset papan
+                    pepetState = { atasWord: 'AAA', atasJarak: '', bawahWord: 'ZZZ', bawahJarak: '', containsWord: '' };
+                    guessInput.value = '';
+                    
+                    if (len === 'ALL') {
+                        guessInput.removeAttribute('maxLength');
+                    } else {
+                        guessInput.maxLength = len;
+                    }
+                    guessInput.placeholder = `Ketik ${len === 'ALL' ? '' : len + ' '}huruf...`;
+                    
+                    sekolorPattern = Array(15).fill('empty'); // Reset sekolor pattern
+                    if(gameMode === 'sekolor' || gameMode === 'sekolor-hard') renderSekolorPattern();
+                    renderLengthButtons();
+                    renderBoard();
+                    updateUI();
+                };
+                container.appendChild(btn);
+            });
+            
+            if (wordLength === 'ALL') {
+                guessInput.removeAttribute('maxLength');
+            } else {
+                guessInput.maxLength = wordLength;
+            }
+        }
+
+        // --- RENDER PAPAN TEBAKAN ---
+        function renderBoard() {
+            boardContainer.innerHTML = '';
+            
+            if (gameMode === 'pepetterus') {
+                resetBtn.style.display = 'flex';
+                const ptDiv = document.createElement('div');
+                ptDiv.className = 'flex flex-col gap-3 w-full max-w-sm mx-auto mt-2';
+                
+                ptDiv.innerHTML = `
+                    <div class="bg-slate-700/50 p-3 rounded-xl border border-sky-500/30 shadow-inner flex flex-col gap-2">
+                        <div class="flex justify-between items-center text-xs font-bold text-sky-400 uppercase tracking-wider px-1">
+                            <span>Batas Atas ⬇</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Awal Abjad</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="pt-atas-word" value="${pepetState.atasWord}" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white uppercase font-mono text-base focus:border-sky-500 focus:outline-none" placeholder="Cth: ABADI" />
+                            <input type="number" id="pt-atas-jarak" value="${pepetState.atasJarak}" class="w-20 bg-slate-900 border border-slate-600 rounded-lg px-2 py-2 text-sky-300 font-mono text-center text-base focus:border-sky-500 focus:outline-none" placeholder="Jarak" />
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-center py-1 relative">
+                        <div class="absolute w-full h-[1px] bg-slate-700"></div>
+                        <div class="bg-slate-800 text-emerald-400 text-lg font-bold px-4 py-1 rounded-full border border-slate-600 shadow-lg z-10 relative">?</div>
+                    </div>
+
+                    <div class="bg-slate-700/50 p-3 rounded-xl border border-orange-500/30 shadow-inner flex flex-col gap-2">
+                        <div class="flex justify-between items-center text-xs font-bold text-orange-400 uppercase tracking-wider px-1">
+                            <span>Batas Bawah ⬆</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Akhir Abjad</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="pt-bawah-word" value="${pepetState.bawahWord}" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white uppercase font-mono text-base focus:border-orange-500 focus:outline-none" placeholder="Cth: ZEBRA" />
+                            <input type="number" id="pt-bawah-jarak" value="${pepetState.bawahJarak}" class="w-20 bg-slate-900 border border-slate-600 rounded-lg px-2 py-2 text-orange-300 font-mono text-center text-base focus:border-orange-500 focus:outline-none" placeholder="Jarak" />
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-700/50 p-3 rounded-xl border border-indigo-500/30 shadow-inner flex flex-col gap-2 mt-2">
+                        <div class="flex justify-between items-center text-xs font-bold text-indigo-400 uppercase tracking-wider px-1">
+                            <span>Wajib Mengandung (Filter)</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Kosongkan jika bebas</span>
+                        </div>
+                        <input type="text" id="pt-contains-word" value="${pepetState.containsWord || ''}" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white uppercase font-mono text-center text-base focus:border-indigo-500 focus:outline-none" placeholder="Cth: TR" />
+                    </div>
+                `;
+                
+                boardContainer.appendChild(ptDiv);
+
+                document.getElementById('pt-atas-word').addEventListener('input', (e) => { 
+                    pepetState.atasWord = e.target.value.toUpperCase(); 
+                    updateUI(); 
+                });
+                document.getElementById('pt-atas-jarak').addEventListener('input', (e) => { 
+                    pepetState.atasJarak = e.target.value; 
+                    updateUI(); 
+                });
+                document.getElementById('pt-bawah-word').addEventListener('input', (e) => { 
+                    pepetState.bawahWord = e.target.value.toUpperCase(); 
+                    updateUI(); 
+                });
+                document.getElementById('pt-bawah-jarak').addEventListener('input', (e) => { 
+                    pepetState.bawahJarak = e.target.value; 
+                    updateUI(); 
+                });
+                document.getElementById('pt-contains-word').addEventListener('input', (e) => { 
+                    pepetState.containsWord = e.target.value.toUpperCase(); 
+                    updateUI(); 
+                });
+
+                return;
+            }
+
+            if (guesses.length === 0) {
+                boardContainer.innerHTML = `
+                    <div class="m-auto w-full text-center py-8 text-slate-500 border-2 border-dashed border-slate-700 rounded-xl">
+                        Belum ada tebakan. Masukkan kata untuk memulai!
+                    </div>
+                `;
+                resetBtn.style.display = 'none';
+                return;
+            }
+
+            resetBtn.style.display = 'flex';
+            guesses.forEach((guess, rowIdx) => {
+                const row = document.createElement('div');
+                const evalClasses = guess.isEvaluated ? 'opacity-100' : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all';
+                row.className = `flex justify-center gap-1 sm:gap-1.5 items-center w-full max-w-full ${evalClasses}`;
+                
+                // Area Huruf Normal
+                const wordArea = document.createElement('div');
+                wordArea.className = `flex justify-center gap-1 sm:gap-1.5 items-center max-w-full shrink-1 min-w-0 ${gameMode === 'buta' || gameMode === 'matabatin' ? 'flex-1' : ''}`;
+                
+                const currentWordLen = guess.word.length;
+                
+                guess.word.split('').forEach((char, colIdx) => {
+                    const status = guess.statuses[colIdx];
+                    const kpColor = guess.kpColors[colIdx];
+                    const akColor = guess.akColors[colIdx];
+                    const btn = document.createElement('button');
+                    
+                    let bgColor = 'bg-slate-600 border-slate-500 text-white';
+                    
+                    if (gameMode === 'jagajarak') {
+                        if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)] text-white';
+                        else if (status === 'red') bgColor = 'bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.5)] text-white';
+                        else if (status === 'orange') bgColor = 'bg-orange-500 border-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.5)] text-white';
+                        else if (status === 'yellow') bgColor = 'bg-yellow-400 border-yellow-300 shadow-[0_0_8px_rgba(250,204,21,0.5)] text-slate-900';
+                        else if (status === 'blue') bgColor = 'bg-blue-500 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)] text-white';
+                        else if (status === 'purple') bgColor = 'bg-purple-500 border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.5)] text-white';
+                    } else if (gameMode === 'kasihpaham') {
+                        if (kpColor === 'pink') bgColor = 'bg-pink-500 border-pink-400 shadow-[0_0_8px_rgba(236,72,153,0.5)] text-white';
+                        else if (kpColor === 'blue') bgColor = 'bg-blue-500 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)] text-white';
+                        else if (kpColor === 'white') bgColor = 'bg-slate-100 border-white shadow-[0_0_8px_rgba(255,255,255,0.5)] text-slate-900';
+                        else bgColor = 'bg-slate-600 border-slate-500 text-slate-400 opacity-80'; // empty
+                    } else if (gameMode === 'acakolor') {
+                        if (akColor === 'pink') bgColor = 'bg-pink-400 border-pink-300 shadow-[0_0_8px_rgba(244,114,182,0.5)] text-slate-900';
+                        else if (akColor === 'sky') bgColor = 'bg-sky-400 border-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.5)] text-slate-900';
+                        else if (akColor === 'white') bgColor = 'bg-slate-100 border-white shadow-[0_0_8px_rgba(255,255,255,0.5)] text-slate-900';
+                        else bgColor = 'bg-slate-600 border-slate-500 text-slate-400 opacity-80'; // empty
+                    } else if (gameMode !== 'buta' && gameMode !== 'matabatin') {
+                        if (status === 'yellow') bgColor = 'bg-yellow-500 border-yellow-400 shadow-lg shadow-yellow-500/20 text-white';
+                        if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-lg shadow-emerald-500/20 text-white';
+                    }
+
+                    // PERBAIKAN UKURAN KOTAK
+                    let boxSize = '';
+                    if (currentWordLen > 12) {
+                        boxSize = 'w-7 sm:w-9 aspect-square text-[10px] sm:text-xs rounded-md border';
+                    } else if (currentWordLen > 9) {
+                        boxSize = 'w-9 sm:w-11 aspect-square text-xs sm:text-sm rounded-lg border-2';
+                    } else if (currentWordLen > 6) {
+                        boxSize = 'w-11 sm:w-14 aspect-square text-base sm:text-lg rounded-lg sm:rounded-xl border-2';
+                    } else {
+                        boxSize = 'w-14 sm:w-16 aspect-square text-2xl sm:text-3xl rounded-xl border-2';
+                    }
+                    
+                    btn.className = `${boxSize} flex items-center justify-center font-bold uppercase transition-all ${gameMode === 'buta' || gameMode === 'matabatin' ? 'cursor-default opacity-80' : 'transform hover:scale-105 active:scale-95'} ${bgColor} shrink-1 min-w-0 p-0 overflow-hidden`;
+                    
+                    let displayContent = (gameMode === 'ketempelan' && guess.pairs) ? guess.pairs[colIdx] : char;
+                    btn.innerHTML = `<span class="${displayContent.length > 1 ? 'tracking-tighter text-[0.8em]' : ''}">${displayContent}</span>`;
+                    
+                    if (gameMode !== 'buta' && gameMode !== 'matabatin') {
+                        btn.onclick = () => toggleStatus(rowIdx, colIdx);
+                        btn.oncontextmenu = (e) => {
+                            e.preventDefault();
+                            toggleStatusReverse(rowIdx, colIdx);
+                        };
+                    }
+                    wordArea.appendChild(btn);
+                });
+                row.appendChild(wordArea);
+
+                // Area Counters (Khusus Mode Sekata Buta)
+                if (gameMode === 'buta') {
+                    const counterArea = document.createElement('div');
+                    counterArea.className = 'flex gap-1 ml-1 sm:ml-2 shrink-0 bg-slate-900/50 p-1 sm:p-1.5 rounded-lg border border-slate-700';
+
+                    const greenBtn = document.createElement('button');
+                    greenBtn.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center hover:bg-emerald-400 transition-colors shadow-sm';
+                    greenBtn.textContent = guess.greenCount;
+                    greenBtn.title = "Klik untuk tambah Hijau";
+                    greenBtn.onclick = () => {
+                        guesses[rowIdx].isEvaluated = true;
+                        guesses[rowIdx].greenCount++;
+                        if (guesses[rowIdx].greenCount > currentWordLen) guesses[rowIdx].greenCount = 0;
+                        if (guesses[rowIdx].greenCount + guesses[rowIdx].yellowCount > currentWordLen) {
+                            guesses[rowIdx].yellowCount = currentWordLen - guesses[rowIdx].greenCount;
+                        }
+                        renderBoard();
+                        updateUI();
+                    };
+
+                    const yellowBtn = document.createElement('button');
+                    yellowBtn.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md bg-yellow-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center hover:bg-yellow-400 transition-colors shadow-sm';
+                    yellowBtn.textContent = guess.yellowCount;
+                    yellowBtn.title = "Klik untuk tambah Kuning";
+                    yellowBtn.onclick = () => {
+                        guesses[rowIdx].isEvaluated = true;
+                        guesses[rowIdx].yellowCount++;
+                        if (guesses[rowIdx].greenCount + guesses[rowIdx].yellowCount > currentWordLen) {
+                            guesses[rowIdx].yellowCount = 0;
+                        }
+                        renderBoard();
+                        updateUI();
+                    };
+
+                    const redBox = document.createElement('div');
+                    redBox.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md bg-red-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center opacity-80 shadow-inner';
+                    redBox.textContent = currentWordLen - guess.greenCount - guess.yellowCount;
+                    redBox.title = "Merah / Abu-abu (Terhitung otomatis)";
+
+                    counterArea.appendChild(greenBtn);
+                    counterArea.appendChild(yellowBtn);
+                    counterArea.appendChild(redBox);
+                    row.appendChild(counterArea);
+                } 
+                // Area Counters (Khusus Mode Mata Batin)
+                else if (gameMode === 'matabatin') {
+                    const counterArea = document.createElement('div');
+                    counterArea.className = 'flex gap-1 ml-1 sm:ml-2 shrink-0 bg-slate-900/50 p-1 sm:p-1.5 rounded-lg border border-slate-700';
+
+                    for(let i=0; i<3; i++) {
+                        const btn = document.createElement('button');
+                        btn.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center hover:bg-slate-600 transition-colors shadow-sm';
+                        btn.textContent = guess.mbCounts[i];
+                        btn.title = `Klik untuk atur skor kolom ${i+1}`;
+                        btn.onclick = () => {
+                            guesses[rowIdx].isEvaluated = true;
+                            guesses[rowIdx].mbCounts[i]++;
+                            if (guesses[rowIdx].mbCounts[i] > currentWordLen) {
+                                guesses[rowIdx].mbCounts[i] = 0;
+                            }
+                            
+                            // Auto adjust other columns to maintain sum = currentWordLen
+                            let sum = guesses[rowIdx].mbCounts[0] + guesses[rowIdx].mbCounts[1] + guesses[rowIdx].mbCounts[2];
+                            if (sum > currentWordLen) {
+                                let excess = sum - currentWordLen;
+                                let next1 = (i + 1) % 3;
+                                let next2 = (i + 2) % 3;
+                                
+                                if (guesses[rowIdx].mbCounts[next1] >= excess) {
+                                    guesses[rowIdx].mbCounts[next1] -= excess;
+                                } else {
+                                    excess -= guesses[rowIdx].mbCounts[next1];
+                                    guesses[rowIdx].mbCounts[next1] = 0;
+                                    guesses[rowIdx].mbCounts[next2] -= excess;
+                                }
+                            } else if (sum < currentWordLen) {
+                                let shortage = currentWordLen - sum;
+                                let next1 = (i + 1) % 3;
+                                guesses[rowIdx].mbCounts[next1] += shortage;
+                            }
+                            
+                            renderBoard();
+                            updateUI();
+                        };
+                        counterArea.appendChild(btn);
+                    }
+                    row.appendChild(counterArea);
+                }
+
+                // Tombol aksi untuk toggle status Evaluasi kata
+                let evalColorClass = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400';
+                if (gameMode === 'buta') evalColorClass = 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400';
+                else if (gameMode === 'matabatin') evalColorClass = 'bg-slate-500/20 border-slate-500/50 text-slate-300';
+                else if (gameMode === 'sekolor') evalColorClass = 'bg-pink-500/20 border-pink-500/50 text-pink-400';
+                else if (gameMode === 'sekolor-hard') evalColorClass = 'bg-orange-500/20 border-orange-500/50 text-orange-400';
+                else if (gameMode === 'salah-sendiri') evalColorClass = 'bg-amber-500/20 border-amber-500/50 text-amber-400';
+                else if (gameMode === 'belah-tengah') evalColorClass = 'bg-teal-500/20 border-teal-500/50 text-teal-400';
+                else if (gameMode === 'konekdot') evalColorClass = 'bg-stone-500/20 border-stone-500/50 text-stone-300';
+                else if (gameMode === 'ketempelan') evalColorClass = 'bg-lime-500/20 border-lime-500/50 text-lime-400';
+                else if (gameMode === 'jagajarak') evalColorClass = 'bg-rose-500/20 border-rose-500/50 text-rose-400';
+                else if (gameMode === 'kasihpaham') evalColorClass = 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400';
+                else if (gameMode === 'acakolor') evalColorClass = 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400';
+                
+                const toggleEvalBtn = document.createElement('button');
+                toggleEvalBtn.className = `ml-1 sm:ml-2 shrink-0 flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl border-2 transition-all ${guess.isEvaluated ? evalColorClass : 'bg-slate-800 border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-white'}`;
+                toggleEvalBtn.innerHTML = guess.isEvaluated ?
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` :
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>`;
+                
+                toggleEvalBtn.title = guess.isEvaluated ? "Batal gunakan kata ini sebagai rujukan" : "Gunakan kata ini sebagai rujukan";
+                toggleEvalBtn.onclick = () => {
+                    guesses[rowIdx].isEvaluated = !guesses[rowIdx].isEvaluated;
+                    renderBoard();
+                    updateUI();
+                };
+                row.appendChild(toggleEvalBtn);
+
+                boardContainer.appendChild(row);
+            });
+        }
+
+        // --- LOGIKA TOGGLE STATUS ---
+        function toggleStatus(rowIdx, colIdx) {
+            guesses[rowIdx].isEvaluated = true; 
+            
+            if (gameMode === 'jagajarak') {
+                const nextStatusJagaJarak = {
+                    'gray': 'green',
+                    'green': 'red',
+                    'red': 'orange',
+                    'orange': 'yellow',
+                    'yellow': 'blue',
+                    'blue': 'purple',
+                    'purple': 'gray'
+                };
+                guesses[rowIdx].statuses[colIdx] = nextStatusJagaJarak[guesses[rowIdx].statuses[colIdx]];
+            } else if (gameMode === 'kasihpaham') {
+                const nextStatusKP = {
+                    'empty': 'pink',
+                    'pink': 'blue',
+                    'blue': 'white',
+                    'white': 'empty'
+                };
+                guesses[rowIdx].kpColors[colIdx] = nextStatusKP[guesses[rowIdx].kpColors[colIdx]];
+            } else if (gameMode === 'acakolor') {
+                const nextStatusAK = {
+                    'empty': 'pink',
+                    'pink': 'sky',
+                    'sky': 'white',
+                    'white': 'empty'
+                };
+                guesses[rowIdx].akColors[colIdx] = nextStatusAK[guesses[rowIdx].akColors[colIdx]];
+            } else {
+                const nextStatus = { 'gray': 'yellow', 'yellow': 'green', 'green': 'gray' };
+                guesses[rowIdx].statuses[colIdx] = nextStatus[guesses[rowIdx].statuses[colIdx]];
+            }
+
+            renderBoard();
+            updateUI(); 
+        }
+
+        function toggleStatusReverse(rowIdx, colIdx) {
+            guesses[rowIdx].isEvaluated = true; 
+            
+            if (gameMode === 'jagajarak') {
+                const prevStatusJagaJarak = {
+                    'gray': 'purple',
+                    'purple': 'blue',
+                    'blue': 'yellow',
+                    'yellow': 'orange',
+                    'orange': 'red',
+                    'red': 'green',
+                    'green': 'gray'
+                };
+                guesses[rowIdx].statuses[colIdx] = prevStatusJagaJarak[guesses[rowIdx].statuses[colIdx]];
+            } else if (gameMode === 'kasihpaham') {
+                const prevStatusKP = {
+                    'empty': 'white',
+                    'white': 'blue',
+                    'blue': 'pink',
+                    'pink': 'empty'
+                };
+                guesses[rowIdx].kpColors[colIdx] = prevStatusKP[guesses[rowIdx].kpColors[colIdx]];
+            } else if (gameMode === 'acakolor') {
+                const prevStatusAK = {
+                    'empty': 'white',
+                    'white': 'sky',
+                    'sky': 'pink',
+                    'pink': 'empty'
+                };
+                guesses[rowIdx].akColors[colIdx] = prevStatusAK[guesses[rowIdx].akColors[colIdx]];
+            } else {
+                const prevStatus = { 'gray': 'green', 'green': 'yellow', 'yellow': 'gray' };
+                guesses[rowIdx].statuses[colIdx] = prevStatus[guesses[rowIdx].statuses[colIdx]];
+            }
+
+            renderBoard();
+            updateUI(); 
+        }
+
+        // --- TAMBAH TEBAKAN (DENGAN SMART INHERITANCE) ---
+        function handleAddGuess(wordToAdd = null, isAuto = false) {
+            let rawWord = (typeof wordToAdd === 'string') ? wordToAdd : guessInput.value;
+            // Bersihkan spasi jika ada
+            let word = rawWord.replace(/\s+/g, '').trim().toUpperCase();
+            
+            if (wordLength !== 'ALL' && word.length !== wordLength) return;
+            if (wordLength === 'ALL' && word.length === 0) return;
+            
+            let currentWordLen = word.length;
+
+            let pairs = [];
+            if (gameMode === 'ketempelan') {
+                const mapStr = document.getElementById('map-ketempelan').value;
+                for (let i = 0; i < currentWordLen; i++) {
+                    pairs.push(getPairForChar(word[i], mapStr));
+                }
+            }
+
+            // AUTO-INHERIT LOGIC: Menyalin warna/status dari huruf yang sama di posisi yang sama dari tebakan sebelumnya
+            let newStatuses = Array(currentWordLen).fill('gray');
+            let newKpColors = Array(currentWordLen).fill('empty');
+            let newAkColors = Array(currentWordLen).fill('empty');
+            
+            if (gameMode === 'normal') {
+                const evaluatedGuesses = guesses.filter(g => g.isEvaluated);
+                evaluatedGuesses.forEach(prevGuess => {
+                    for (let i = 0; i < currentWordLen; i++) {
+                        // Pastikan panjang kata tebakan sebelumnya cukup panjang untuk diperiksa posisinya
+                        if (i < prevGuess.word.length && prevGuess.word[i] === word[i]) {
+                            if (prevGuess.statuses[i] !== 'gray') newStatuses[i] = prevGuess.statuses[i];
+                        }
+                    }
+                });
+            }
+
+            guesses.push({
+                word: word,
+                pairs: pairs.length > 0 ? pairs : null,
+                statuses: newStatuses,
+                kpColors: newKpColors,
+                akColors: newAkColors,
+                greenCount: 0,
+                yellowCount: 0,
+                mbCounts: [0, 0, currentWordLen], 
+                jarak: '',
+                isEvaluated: false 
+            });
+            
+            guessInput.value = '';
+            checkGuessInput();
+            renderBoard();
+            updateUI();
+
+            if (!isAuto) {
+                // Auto-focus kembali ke input agar mudah mengetik secara beruntun
+                guessInput.focus();
+                const boardContainer = document.getElementById('board-container');
+                boardContainer.scrollTo({ top: boardContainer.scrollHeight, behavior: 'smooth' });
+            }
+        }
+
+        // --- SIMULASI KODE WORDLE STANDAR ---
+        function simulateWordle(guessStr, secretStr) {
+            let result = Array(guessStr.length).fill('gray');
+            let secretLetterCounts = {};
+
+            // Hitung kemunculan huruf target
+            for (let i = 0; i < secretStr.length; i++) {
+                let char = secretStr[i];
+                secretLetterCounts[char] = (secretLetterCounts[char] || 0) + 1;
+            }
+
+            // Temukan semua tebakan Hijau (Green)
+            for (let i = 0; i < guessStr.length; i++) {
+                if (guessStr[i] === secretStr[i]) {
+                    result[i] = 'green';
+                    secretLetterCounts[guessStr[i]]--;
+                }
+            }
+
+            // Temukan yang Kuning (Yellow)
+            for (let i = 0; i < guessStr.length; i++) {
+                if (result[i] !== 'green' && secretLetterCounts[guessStr[i]] > 0) {
+                    result[i] = 'yellow';
+                    secretLetterCounts[guessStr[i]]--;
+                }
+            }
+
+            return result;
+        }
+
+        // --- SIMULASI KODE WORDLE KETEMPELAN (PASANGAN HURUF) ---
+        function simulateKetempelanWordle(guessPairs, secretStr) {
+            let result = Array(guessPairs.length).fill('gray');
+            let secretLetterCounts = {};
+
+            for (let i = 0; i < secretStr.length; i++) {
+                let char = secretStr[i];
+                secretLetterCounts[char] = (secretLetterCounts[char] || 0) + 1;
+            }
+
+            // Green pass
+            for (let i = 0; i < guessPairs.length; i++) {
+                let secretChar = secretStr[i];
+                if (guessPairs[i].includes(secretChar)) {
+                    result[i] = 'green';
+                    secretLetterCounts[secretChar]--;
+                }
+            }
+
+            // Yellow pass
+            for (let i = 0; i < guessPairs.length; i++) {
+                if (result[i] !== 'green') {
+                    let matchedChar = guessPairs[i].split('').find(char => secretLetterCounts[char] > 0);
+                    if (matchedChar) {
+                        result[i] = 'yellow';
+                        secretLetterCounts[matchedChar]--;
+                    }
+                }
+            }
+            return result;
+        }
+
+        // --- SIMULASI KODE JAGA JARAK ---
+        function simulateJagaJarak(guessStr, targetStr) {
+            let result = [];
+            for (let i = 0; i < guessStr.length; i++) {
+                let diff = Math.abs(guessStr.charCodeAt(i) - targetStr.charCodeAt(i));
+                if (diff === 0) result.push('green');
+                else if (diff >= 1 && diff <= 5) result.push('red');
+                else if (diff >= 6 && diff <= 10) result.push('orange');
+                else if (diff >= 11 && diff <= 15) result.push('yellow');
+                else if (diff >= 16 && diff <= 20) result.push('blue');
+                else if (diff >= 21 && diff <= 25) result.push('purple');
+                else result.push('gray'); // Fallback
+            }
+            return result;
+        }
+
+        // --- FUNGSI MAPPING WARNA KEYBOARD (UNTUK MODE SEKOLOR) ---
+        function getCharColor(char) {
+            if ('AEIOU'.includes(char)) return 'red';
+            if ('QWRTYP'.includes(char)) return 'blue';
+            if ('SDFGHJKL'.includes(char)) return 'yellow';
+            if ('ZXCVBNM'.includes(char)) return 'purple';
+            return 'empty';
+        }
+
+        function getCharColorHard(char) {
+            const redChars = mapRedInput.value.toUpperCase();
+            const blueChars = mapBlueInput.value.toUpperCase();
+            const yellowChars = mapYellowInput.value.toUpperCase();
+            const purpleChars = mapPurpleInput.value.toUpperCase();
+
+            if (redChars.includes(char)) return 'red';
+            if (blueChars.includes(char)) return 'blue';
+            if (yellowChars.includes(char)) return 'yellow';
+            if (purpleChars.includes(char)) return 'purple';
+            return 'empty';
+        }
+
+        // --- SISTEM SOLVER HEURISTIK CERDAS ---
+        function getPossibleWords() {
+            let targetLen = gameMode === 'belah-tengah' ? (wordLength === 'ALL' ? 'ALL' : wordLength * 2) : wordLength;
+            
+            let filtered = dictionary;
+            if (targetLen !== 'ALL') {
+                filtered = dictionary.filter(w => w.length === targetLen);
+            }
+            
+            // --- TAMBAHAN FILTER SEKOLOR ---
+            if (gameMode === 'sekolor' || gameMode === 'sekolor-hard') {
+                filtered = filtered.filter(candidate => {
+                    let candidateStr = candidate.toUpperCase();
+                    for(let i=0; i<wordLength; i++) {
+                        let expectedColor = sekolorPattern[i];
+                        if (expectedColor !== 'empty') {
+                            let charColor = gameMode === 'sekolor' ? getCharColor(candidateStr[i]) : getCharColorHard(candidateStr[i]);
+                            if (charColor !== expectedColor) return false;
+                        }
+                    }
+                    return true;
+                });
+            }
+
+            // PEPET TERUS Logic
+            if (gameMode === 'pepetterus') {
+                let atasWord = pepetState.atasWord.toUpperCase();
+                let bawahWord = pepetState.bawahWord.toUpperCase();
+                let dAtas = parseInt(pepetState.atasJarak);
+                let dBawah = parseInt(pepetState.bawahJarak);
+                let containsWord = (pepetState.containsWord || '').toUpperCase();
+
+                let hasAtas = atasWord && atasWord !== 'AAA' && !isNaN(dAtas);
+                let hasBawah = bawahWord && bawahWord !== 'ZZZ' && !isNaN(dBawah);
+
+                if (!hasAtas && !hasBawah && !containsWord) {
+                    return filtered.map(w => ({ word: w.toUpperCase(), errorCount: 0 }));
+                }
+
+                let idxA = getAlphaIndex(hasAtas ? atasWord : 'A', filtered);
+                let idxB = getAlphaIndex(hasBawah ? bawahWord : 'Z', filtered);
+
+                let expectedIndex = -1;
+
+                if (hasAtas && hasBawah && (dAtas + dBawah) > 0) {
+                    // Kalkulus Rasio Jarak: Menolerir perbedaan ukuran kamus game vs kamus kita
+                    let ratio = dAtas / (dAtas + dBawah);
+                    expectedIndex = idxA + ratio * (idxB - idxA);
+                } else if (hasAtas) {
+                    // Asumsi ukuran rata-rata kamus game ~ 10000 kata
+                    let K = filtered.length / 10000;
+                    expectedIndex = idxA + (dAtas * K);
+                } else if (hasBawah) {
+                    let K = filtered.length / 10000;
+                    expectedIndex = idxB - (dBawah * K);
+                }
+
+                let results = [];
+                for (let i = 0; i < filtered.length; i++) {
+                    let candidateStr = filtered[i].toUpperCase();
+                    let isValid = true;
+
+                    if (containsWord && !candidateStr.includes(containsWord)) isValid = false;
+                    if (hasAtas && candidateStr <= atasWord) isValid = false;
+                    if (hasBawah && candidateStr >= bawahWord) isValid = false;
+
+                    if (isValid) {
+                        results.push({ word: candidateStr, errorCount: 0 });
+                    }
+                }
+
+                if (results.length === 0) {
+                    // Fallback jika tidak ada kata di antara batas
+                    for (let i = 0; i < filtered.length; i++) {
+                        let candidateStr = filtered[i].toUpperCase();
+                        if (containsWord && !candidateStr.includes(containsWord)) continue; // STRICT FILTER UNTUK CONTAINS
+                        
+                        let err = 0;
+                        if (hasAtas && candidateStr <= atasWord) err += Math.abs(idxA - i);
+                        if (hasBawah && candidateStr >= bawahWord) err += Math.abs(i - idxB);
+                        results.push({ word: candidateStr, errorCount: err });
+                    }
+                    results.sort((a, b) => a.errorCount - b.errorCount);
+                    if (results.length > 0) {
+                        let bestErr = results[0].errorCount;
+                        results = results.filter(r => r.errorCount <= bestErr + 5).sort((a,b) => a.word.localeCompare(b.word));
+                    }
+                    return results;
+                }
+
+                // Pengurutan Abjad Murni
+                results.sort((a, b) => a.word.localeCompare(b.word));
+                
+                // Kalkulasi Indeks Paling Ideal
+                let idealIndex = 0;
+                if (hasAtas && hasBawah && (dAtas + dBawah) > 0) {
+                    let ratio = dAtas / (dAtas + dBawah);
+                    idealIndex = Math.floor((results.length - 1) * ratio);
+                } else if (hasAtas) {
+                    let ratio = Math.min(1, dAtas / (results.length + dAtas));
+                    idealIndex = Math.floor((results.length - 1) * ratio);
+                } else if (hasBawah) {
+                    let ratio = Math.max(0, 1 - (dBawah / (results.length + dBawah)));
+                    idealIndex = Math.floor((results.length - 1) * ratio);
+                } else {
+                    idealIndex = Math.floor((results.length - 1) / 2);
+                }
+                
+                // Tandai yang persis di titik rasio
+                if (idealIndex >= 0 && idealIndex < results.length) {
+                    results[idealIndex].isIdeal = true;
+                }
+
+                return results;
+            }
+
+            let activeGuesses = guesses.filter(g => g.isEvaluated);
+
+            if (activeGuesses.length === 0) {
+                return filtered.map(w => ({ word: w.toUpperCase(), errorCount: 0 }));
+            }
+
+            let guessedWordsSet = new Set(activeGuesses.map(g => g.word.toUpperCase()));
+            let results = [];
+            
+            filtered.forEach(candidate => {
+                let candidateStr = candidate.toUpperCase();
+
+                if (gameMode !== 'belah-tengah' && gameMode !== 'kasihpaham' && gameMode !== 'acakolor' && guessedWordsSet.has(candidateStr)) {
+                    let guessObj = activeGuesses.find(g => g.word === candidateStr);
+                    let isAllGreen = guessObj && guessObj.statuses && guessObj.statuses.every(s => s === 'green');
+                    let isAllButaGreen = guessObj && gameMode === 'buta' && guessObj.greenCount === candidateStr.length;
+                    let isAllMBGreen = guessObj && gameMode === 'matabatin' && guessObj.mbCounts.includes(candidateStr.length);
+                    
+                    if (!isAllGreen && !isAllButaGreen && !isAllMBGreen) {
+                        return; // Lewati kata yang sudah ditebak
+                    }
+                }
+
+                if (gameMode === 'belah-tengah') {
+                    let errorFront = 0;
+                    let errorBack = 0;
+                    let frontHalf = candidateStr.slice(0, wordLength);
+                    let backHalf = candidateStr.slice(wordLength);
+
+                    for (let guess of activeGuesses) {
+                        let guessStr = guess.word.toUpperCase();
+                        let inputStatuses = guess.statuses;
+                        
+                        let realFront = simulateWordle(guessStr, frontHalf);
+                        let realBack = simulateWordle(guessStr, backHalf);
+
+                        for (let i = 0; i < wordLength; i++) {
+                            if (realFront[i] !== inputStatuses[i]) errorFront++;
+                            if (realBack[i] !== inputStatuses[i]) errorBack++;
+                        }
+                    }
+                    
+                    let errorCount = Math.min(errorFront, errorBack);
+                    let matchedHalf = 'both';
+                    if (errorFront < errorBack) matchedHalf = 'front';
+                    else if (errorBack < errorFront) matchedHalf = 'back';
+                    
+                    results.push({ word: candidateStr, errorCount: errorCount, matchedHalf: matchedHalf });
+                } else if (gameMode === 'ketempelan') {
+                    let errorCount = 0;
+                    for (let guess of activeGuesses) {
+                        let inputStatuses = guess.statuses;
+                        let realStatuses = simulateKetempelanWordle(guess.pairs, candidateStr);
+
+                        for (let i = 0; i < guess.word.length; i++) {
+                            if (realStatuses[i] !== inputStatuses[i]) {
+                                errorCount++;
+                            }
+                        }
+                    }
+                    results.push({ word: candidateStr, errorCount: errorCount });
+                } else if (gameMode === 'kasihpaham' || gameMode === 'acakolor') {
+                    // --- LOGIKA KASIH PAHAM & ACAKOLOR ---
+                    // Menguji 6 permutasi warna: [Pink, Biru, Putih] atau [Pink, Biru Muda, Putih] -> [Green, Yellow, Gray]
+                    const kpPermutations = gameMode === 'kasihpaham' ? [
+                        { 'pink': 'green', 'blue': 'yellow', 'white': 'gray' },
+                        { 'pink': 'green', 'blue': 'gray', 'white': 'yellow' },
+                        { 'pink': 'yellow', 'blue': 'green', 'white': 'gray' },
+                        { 'pink': 'yellow', 'blue': 'gray', 'white': 'green' },
+                        { 'pink': 'gray', 'blue': 'green', 'white': 'yellow' },
+                        { 'pink': 'gray', 'blue': 'yellow', 'white': 'green' }
+                    ] : [
+                        { 'pink': 'green', 'sky': 'yellow', 'white': 'gray' },
+                        { 'pink': 'green', 'sky': 'gray', 'white': 'yellow' },
+                        { 'pink': 'yellow', 'sky': 'green', 'white': 'gray' },
+                        { 'pink': 'yellow', 'sky': 'gray', 'white': 'green' },
+                        { 'pink': 'gray', 'sky': 'green', 'white': 'yellow' },
+                        { 'pink': 'gray', 'sky': 'yellow', 'white': 'green' }
+                    ];
+
+                    let minPermError = Infinity;
+
+                    for (let perm of kpPermutations) {
+                        let currentPermError = 0;
+                        for (let guess of activeGuesses) {
+                            let guessStr = guess.word.toUpperCase();
+                            let realStatuses = simulateWordle(guessStr, candidateStr);
+                            
+                            for (let i = 0; i < guess.word.length; i++) {
+                                let screenColor = gameMode === 'kasihpaham' ? guess.kpColors[i] : guess.akColors[i]; 
+                                if (screenColor !== 'empty') {
+                                    let assumedStatus = perm[screenColor];
+                                    if (realStatuses[i] !== assumedStatus) {
+                                        currentPermError++;
+                                    }
+                                }
+                            }
+                        }
+                        if (currentPermError < minPermError) {
+                            minPermError = currentPermError;
+                        }
+                    }
+                    results.push({ word: candidateStr, errorCount: minPermError });
+
+                } else {
+                    let errorCount = 0; 
+                    
+                    // --- LOGIKA MATA BATIN ---
+                    if (gameMode === 'matabatin') {
+                        let minPermError = Infinity;
+                        const permutations = [
+                            ['green', 'yellow', 'gray'],
+                            ['green', 'gray', 'yellow'],
+                            ['yellow', 'green', 'gray'],
+                            ['yellow', 'gray', 'green'],
+                            ['gray', 'green', 'yellow'],
+                            ['gray', 'yellow', 'green']
+                        ];
+                        
+                        permutations.forEach(perm => {
+                            let permError = 0;
+                            for (let guess of activeGuesses) {
+                                let guessStr = guess.word.toUpperCase();
+                                let realStatuses = simulateWordle(guessStr, candidateStr);
+                                
+                                let simGreenCount = 0;
+                                let simYellowCount = 0;
+                                for (let i = 0; i < guess.word.length; i++) {
+                                    if (realStatuses[i] === 'green') simGreenCount++;
+                                    if (realStatuses[i] === 'yellow') simYellowCount++;
+                                }
+                                
+                                let assumedGreenCount = 0;
+                                let assumedYellowCount = 0;
+                                for(let i=0; i<3; i++) {
+                                    if (perm[i] === 'green') assumedGreenCount = guess.mbCounts[i];
+                                    if (perm[i] === 'yellow') assumedYellowCount = guess.mbCounts[i];
+                                }
+                                
+                                permError += Math.abs(simGreenCount - assumedGreenCount) + Math.abs(simYellowCount - assumedYellowCount);
+                            }
+                            if (permError < minPermError) {
+                                minPermError = permError;
+                            }
+                        });
+                        errorCount += minPermError;
+                    } else if (gameMode === 'jagajarak') {
+                        // --- LOGIKA JAGA JARAK ---
+                        for (let guess of activeGuesses) {
+                            let guessStr = guess.word.toUpperCase();
+                            let inputStatuses = guess.statuses;
+                            let realStatuses = simulateJagaJarak(guessStr, candidateStr);
+
+                            for (let i = 0; i < guess.word.length; i++) {
+                                // Skip calculation if user leaves it gray (means they didn't input anything yet)
+                                if (inputStatuses[i] !== 'gray') {
+                                    if (realStatuses[i] !== inputStatuses[i]) {
+                                        errorCount++;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // --- LOGIKA NORMAL, TIPU, SALAH-SENDIRI, BUTA, SEKOLOR, KONEKDOT ---
+                        for (let guess of activeGuesses) {
+                            let guessStr = guess.word.toUpperCase();
+                            let inputStatuses = guess.statuses;
+                            let realStatuses = simulateWordle(guessStr, candidateStr);
+
+                            if (gameMode === 'buta') {
+                                // MODE SEKATA BUTA: Bandingkan Total Angka
+                                let simGreenCount = 0;
+                                let simYellowCount = 0;
+                                for (let i = 0; i < guess.word.length; i++) {
+                                    if (realStatuses[i] === 'green') simGreenCount++;
+                                    if (realStatuses[i] === 'yellow') simYellowCount++;
+                                }
+                                errorCount += Math.abs(simGreenCount - guess.greenCount) + Math.abs(simYellowCount - guess.yellowCount);
+
+                            } else {
+                                // MODE NORMAL, TIPU, SALAH-SENDIRI, SEKOLOR, KONEKDOT: Bandingkan per Kotak
+                                let mismatches = 0;
+                                for (let i = 0; i < guess.word.length; i++) {
+                                    if (gameMode === 'normal' || gameMode === 'sekolor' || gameMode === 'sekolor-hard' || gameMode === 'konekdot') {
+                                        if (realStatuses[i] !== inputStatuses[i]) {
+                                            mismatches++; 
+                                        }
+                                    } else if (gameMode === 'tipu') {
+                                        if (realStatuses[i] === inputStatuses[i]) {
+                                            mismatches++; // True color equals input color means it's a honest box -> Error for Tipu
+                                        }
+                                    } else if (gameMode === 'salah-sendiri') {
+                                        if (realStatuses[i] !== inputStatuses[i]) {
+                                            mismatches++;
+                                        }
+                                    }
+                                }
+
+                                if (gameMode === 'salah-sendiri') {
+                                    // Di Salah Sendiri, harus ADA TEPAT 1 WARNA YANG SALAH per baris
+                                    errorCount += Math.abs(mismatches - 1);
+                                } else {
+                                    errorCount += mismatches;
+                                }
+                            }
+                        }
+                    }
+                    
+                    results.push({ word: candidateStr, errorCount: errorCount });
+                }
+            });
+
+            results.sort((a, b) => a.errorCount - b.errorCount);
+
+            // LOGIKA SMART TOLERANCE
+            if (results.length > 0) {
+                let bestError = results[0].errorCount;
+                if (bestError === 0) {
+                    results = results.filter(r => r.errorCount === 0);
+                } else {
+                    let tolerance = 1;
+                    if (gameMode === 'kasihpaham' || gameMode === 'acakolor') tolerance = 4; // High tolerance for bugs
+                    results = results.filter(r => r.errorCount <= bestError + tolerance);
+                }
+            }
+
+            return results;
+        }
+
+        // --- UPDATE UI SARAN KATA ---
+        function updateUI() {
+            let targetLen = gameMode === 'belah-tengah' ? (wordLength === 'ALL' ? 'ALL' : wordLength * 2) : wordLength;
+            let dictForCurrentLength = dictionary;
+            if (targetLen !== 'ALL') {
+                dictForCurrentLength = dictionary.filter(w => w.length === targetLen);
+            }
+            
+            if (dictionary.length === 0 || dictForCurrentLength.length === 0) {
+                possibleCount.textContent = `0 kata`;
+                possibleWordsContainer.innerHTML = `<div class="text-yellow-400 text-center py-4 text-sm border border-yellow-500/30 rounded-lg bg-yellow-500/10">Kamus untuk <b>${targetLen === 'ALL' ? 'Semua' : targetLen} huruf</b> kosong! Silakan muat atau unggah file kamus terlebih dahulu.</div>`;
+                return;
+            }
+
+            const activeGuesses = guesses.filter(g => g.isEvaluated);
+            let isStart = activeGuesses.length === 0;
+
+            if (gameMode === 'pepetterus') {
+                let hasAtas = pepetState.atasWord && pepetState.atasWord !== 'AAA' && pepetState.atasJarak !== '';
+                let hasBawah = pepetState.bawahWord && pepetState.bawahWord !== 'ZZZ' && pepetState.bawahJarak !== '';
+                let hasContains = pepetState.containsWord !== '';
+                isStart = !hasAtas && !hasBawah && !hasContains;
+            }
+
+            let possibleWordsObjs = getPossibleWords();
+            
+            // --- FILTER PENCARIAN SARAN KATA ---
+            const searchVal = searchSaranInput.value.toUpperCase().trim();
+            if (searchVal) {
+                possibleWordsObjs = possibleWordsObjs.filter(obj => obj.word.includes(searchVal));
+            }
+            
+            possibleCount.textContent = `${possibleWordsObjs.length} kata`;
+            
+            possibleWordsContainer.innerHTML = '';
+            if (possibleWordsObjs.length > 0) {
+                
+                // --- 1. ALGORITMA RANKING CERDAS: Frekuensi Huruf + Posisi Spesifik ---
+                const letterFreq = {};
+                // Buat array frekuensi posisi, batas 20 untuk keamanan panjang max
+                const maxLen = targetLen === 'ALL' ? 20 : targetLen;
+                const posFreq = Array.from({ length: maxLen }, () => ({}));
+
+                possibleWordsObjs.forEach(obj => {
+                    const word = obj.word;
+                    const uniqueLetters = new Set(word);
+                    uniqueLetters.forEach(char => {
+                        letterFreq[char] = (letterFreq[char] || 0) + 1;
+                    });
+                    
+                    for (let i = 0; i < word.length; i++) {
+                        const char = word[i];
+                        posFreq[i][char] = (posFreq[i][char] || 0) + 1;
+                    }
+                });
+
+                const legendaryStarters = ['AUDIO', 'KARET', 'SAUTO', 'PINTU', 'ORANG', 'BERAS', 'ADIEU', 'CRANE', 'SLATE', 'ROAST'];
+
+                possibleWordsObjs.forEach(obj => {
+                    let score = 0;
+                    const word = obj.word;
+                    const uniqueLetters = new Set(word);
+                    
+                    // Base Score: Mengandung huruf yang paling umum
+                    uniqueLetters.forEach(char => {
+                        score += letterFreq[char] || 0;
+                    });
+
+                    // Advanced Positional Score: (Bobot lebih tinggi) Huruf berada di posisi yang paling umum secara statistik
+                    for (let i = 0; i < word.length; i++) {
+                        score += (posFreq[i][word[i]] || 0) * 1.5;
+                    }
+
+                    // BONUS PEMBUKA AMPUH (Hanya aktif jika papan masih kosong)
+                    if (isStart) {
+                        const vowels = ['A', 'E', 'I', 'O', 'U'];
+                        let uniqueVowelsCount = 0;
+                        vowels.forEach(v => {
+                            if (uniqueLetters.has(v)) uniqueVowelsCount++;
+                        });
+                        
+                        score += (uniqueVowelsCount * 100000); 
+
+                        if (legendaryStarters.includes(word)) {
+                            score += 500000;
+                        }
+                    }
+
+                    obj.score = score;
+                });
+
+                // Urutkan Prioritas
+                possibleWordsObjs.sort((a, b) => {
+                    if (gameMode === 'pepetterus') {
+                        return a.word.localeCompare(b.word);
+                    }
+                    if (a.errorCount !== b.errorCount) return a.errorCount - b.errorCount;
+                    return b.score - a.score;
+                });
+                // ------------------------------------------
+
+                const flexWrap = document.createElement('div');
+                flexWrap.className = 'flex flex-wrap gap-2 items-center';
+                
+                let displayWords = possibleWordsObjs;
+                let isTruncated = false;
+                let truncatedMsg = '';
+                
+                if (gameMode === 'pepetterus') {
+                    let idealIdx = possibleWordsObjs.findIndex(o => o.isIdeal);
+                    if (idealIdx === -1) idealIdx = Math.floor(possibleWordsObjs.length / 2);
+                    
+                    if (possibleWordsObjs.length > 300) {
+                        isTruncated = true;
+                        let start = Math.max(0, idealIdx - 150);
+                        let end = Math.min(possibleWordsObjs.length, start + 300);
+                        if (end - start < 300) start = Math.max(0, end - 300);
+                        displayWords = possibleWordsObjs.slice(start, end);
+                        truncatedMsg = `... (Menampilkan 300 kata di sekitar rasio tengah dari total ${possibleWordsObjs.length} kata)`;
+                    }
+                } else {
+                    if (possibleWordsObjs.length > 300) {
+                        isTruncated = true;
+                        displayWords = possibleWordsObjs.slice(0, 300);
+                        truncatedMsg = `... (+${possibleWordsObjs.length - 300} lainnya)`;
+                    }
+                }
+                
+                displayWords.forEach((obj, index) => {
+                    const span = document.createElement('span');
+                    
+                    let extraInfo = '';
+                    if (obj.errorCount > 0) { // Menampilkan info fallback jika salah input warna
+                        if (gameMode === 'tipu') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-red-300">(${obj.errorCount} Salah)</span>`;
+                        } else if (gameMode === 'buta' || gameMode === 'matabatin') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-indigo-300">(${obj.errorCount} Salah)</span>`;
+                        } else if (gameMode === 'jagajarak') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-rose-300">(${obj.errorCount} Jarak Meleset)</span>`;
+                        } else if (gameMode === 'salah-sendiri') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-amber-300">(${obj.errorCount} Meleset)</span>`;
+                        } else if (gameMode === 'kasihpaham' || gameMode === 'acakolor') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-fuchsia-300">(${obj.errorCount} Salah/Bug)</span>`;
+                        } else if (gameMode === 'pepetterus') {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-red-400">(Di Luar Batas)</span>`;
+                        } else {
+                            extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-red-300">(${obj.errorCount} Salah)</span>`;
+                        }
+                    } else if (gameMode === 'tipu' && !isStart) {
+                        extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-emerald-300">(100% Tipu)</span>`;
+                    } else if (gameMode === 'salah-sendiri' && !isStart) {
+                        extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-emerald-300">(100% 1 Salah)</span>`;
+                    } else if (gameMode === 'pepetterus' && !isStart) {
+                        extraInfo = ` <span class="opacity-70 text-[9px] ml-1 text-sky-300">(Deviasi ±${Math.round(obj.errorCount)})</span>`;
+                    }
+
+                    // Tampilan khusus mode Belah Tengah
+                    let wordHTML = obj.word;
+                    if (gameMode === 'belah-tengah') {
+                        if (obj.matchedHalf === 'front') {
+                            wordHTML = `<span class="font-bold text-teal-300">${obj.word.slice(0, wordLength)}</span><span class="opacity-60">${obj.word.slice(wordLength)}</span>`;
+                        } else if (obj.matchedHalf === 'back') {
+                            wordHTML = `<span class="opacity-60">${obj.word.slice(0, wordLength)}</span><span class="font-bold text-teal-300">${obj.word.slice(wordLength)}</span>`;
+                        } else {
+                            wordHTML = `<span class="font-bold text-teal-300">${obj.word.slice(0, wordLength)}</span><span class="font-bold text-teal-300">${obj.word.slice(wordLength)}</span>`;
+                        }
+                    }
+
+                    // Render Konekdot Visuals
+                    if (gameMode === 'konekdot' && activeGuesses.length > 0) {
+                        let lastGuess = activeGuesses[activeGuesses.length - 1].word;
+                        let svgHTML = generateKonekdotSVG(lastGuess, obj.word);
+                        
+                        span.className = 'bg-slate-800 text-slate-200 p-2 rounded-lg border border-slate-700 hover:border-slate-500 cursor-default shadow-sm transition-all flex flex-col items-center gap-1';
+                        
+                        let badgeHTML = '';
+                        if (index < 5 && possibleWordsObjs.length > 1) badgeHTML = `<span class="text-[9px] text-yellow-300 font-bold px-1 bg-yellow-500/20 rounded">TOP</span>`;
+                        
+                        span.innerHTML = `
+                            <div class="flex items-center gap-1"><span class="font-mono text-[10px] sm:text-xs font-bold tracking-widest">${obj.word}</span> ${badgeHTML}</div>
+                            <div class="mt-1">${svgHTML}</div>
+                        `;
+                    } else if (gameMode === 'pepetterus') {
+                        if (obj.isIdeal) {
+                            extraInfo = ` <span class="opacity-90 text-[9px] ml-1 text-sky-200">(Target Rasio 🎯)</span>`;
+                            span.className = 'bg-sky-600/30 text-sky-300 px-3 py-1.5 rounded-lg font-mono text-sm border border-sky-400/50 cursor-default shadow-md shadow-sky-500/20 font-bold flex items-center transition-all scale-105 my-1';
+                            span.innerHTML = `<svg class="mr-1 shrink-0" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path></svg> ${wordHTML}${extraInfo}`;
+                        } else if (obj.errorCount > 0) {
+                            span.className = 'bg-red-900/20 text-red-300/50 px-2 py-1.5 rounded-lg font-mono text-xs border border-red-900/50 cursor-default flex items-center line-through';
+                            span.innerHTML = `${wordHTML}${extraInfo}`;
+                        } else {
+                            span.className = 'bg-slate-800 text-slate-200 px-2 py-1.5 rounded-lg font-mono text-xs border border-slate-700 hover:border-slate-500 cursor-default shadow-sm transition-all flex items-center';
+                            span.innerHTML = `${wordHTML}${extraInfo}`;
+                        }
+                    } else {
+                        // Highlight 5 Kata Terbaik untuk mode selain Konekdot dan Pepet Terus
+                        if (index < 5 && possibleWordsObjs.length > 1 && obj.errorCount === possibleWordsObjs[0].errorCount) {
+                            let badgeText = isStart ? 'PEMBUKA AMPUH' : 'TERBAIK';
+                            span.className = 'bg-yellow-500/20 text-yellow-300 px-2 py-1.5 rounded-lg font-mono text-xs border border-yellow-500/50 hover:border-yellow-400 cursor-default shadow-sm font-bold flex items-center transition-all';
+                            span.innerHTML = `<svg class="mr-1 shrink-0" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${wordHTML} <span class="opacity-80 text-[9px] ml-1 text-yellow-200">(${badgeText})</span>${extraInfo}`;
+                        } else if (possibleWordsObjs.length === 1 && obj.errorCount === 0 && (!isStart || gameMode === 'sekolor' || gameMode === 'sekolor-hard')) {
+                            // Jawaban Pasti Sempurna
+                            span.className = 'bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-lg font-mono text-sm border border-emerald-500/50 hover:border-emerald-400 cursor-default shadow-sm font-bold flex items-center animate-pulse';
+                            span.innerHTML = `<svg class="mr-1 shrink-0" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> JAWABAN: ${wordHTML}${extraInfo}`;
+                        } else {
+                            // Kata biasa
+                            span.className = 'bg-slate-800 text-slate-200 px-2 py-1.5 rounded-lg font-mono text-xs border border-slate-700 hover:border-slate-500 cursor-default shadow-sm transition-all flex items-center';
+                            span.innerHTML = `${wordHTML}${extraInfo}`;
+                        }
+                    }
+                    
+                    flexWrap.appendChild(span);
+                });
+
+                if (isTruncated) {
+                    const more = document.createElement('span');
+                    more.className = 'text-slate-500 text-xs py-1.5 px-2 font-mono';
+                    more.textContent = truncatedMsg;
+                    flexWrap.appendChild(more);
+                }
+
+                possibleWordsContainer.appendChild(flexWrap);
+            } else {
+                possibleWordsContainer.innerHTML = '<div class="text-slate-500 text-center py-4">Tidak ada kata di kamus yang cocok dengan kondisi saat ini.</div>';
+            }
+        }
+
+        // --- UPDATE KAMUS KETIKA TEXTAREA BERUBAH (DENGAN DEBOUNCING) ---
+        function updateDictionary() {
+            const text = customDictTextarea.value.trim();
+            if (text) {
+                const words = text.split('\n');
+                const tempSet = new Set(baseDictionary);
+                
+                for(let i=0; i<words.length; i++) {
+                    const w = words[i].trim();
+                    if(w.length >= 3 && w.length <= 15) {
+                        tempSet.add(w.toUpperCase());
+                    }
+                }
+                dictionary = Array.from(tempSet).sort();
+            } else {
+                dictionary = [...baseDictionary];
+            }
+            updateUI();
+        }
+
+        let dictTimeout;
+        customDictTextarea.addEventListener('input', () => {
+            clearTimeout(dictTimeout);
+            dictTimeout = setTimeout(updateDictionary, 500); 
+        });
+
+        // --- WEBSOCKET INDOFINITY ---
+        function toggleWebSocket() {
+            if (connectionStatus === 'connected' || connectionStatus === 'connecting') {
+                if (ws) ws.close();
+                setWSState('disconnected');
+                return;
+            }
+
+            setWSState('connecting');
+            ws = new WebSocket('ws://localhost:62024');
+
+            ws.onopen = function () {
+                console.log('Terhubung ke IndoFinity WebSocket');
+                setWSState('connected');
+            };
+
+            ws.onmessage = function (eventMsg) {
+                try {
+                    const message = JSON.parse(eventMsg.data);
+                    const { event, data: eventData } = message;
+
+                    if (event === 'chat') {
+                        handleNewComment(eventData.uniqueId, eventData.comment);
+                    }
+                } catch (error) {
+                    console.error('Error parsing message:', error);
+                }
+            };
+
+            ws.onclose = function () {
+                console.log('Koneksi WebSocket ditutup');
+                setWSState('disconnected');
+            };
+
+            ws.onerror = function (err) {
+                console.error('WebSocket error:', err);
+                setWSState('disconnected');
+            };
+        }
+
+        function setWSState(state) {
+            connectionStatus = state;
+            if (state === 'connected') {
+                wsBtn.textContent = 'Putuskan Koneksi';
+                wsBtn.className = 'w-full py-2.5 rounded-lg font-bold flex justify-center items-center gap-2 transition-all shadow-lg bg-red-500 hover:bg-red-600 text-white shadow-red-500/20';
+                wsStatusText.style.display = 'block';
+            } else if (state === 'connecting') {
+                wsBtn.textContent = 'Menghubungkan...';
+                wsBtn.className = 'w-full py-2.5 rounded-lg font-bold flex justify-center items-center gap-2 transition-all shadow-lg bg-yellow-500 text-slate-900 cursor-wait';
+                wsStatusText.style.display = 'none';
+            } else {
+                wsBtn.textContent = 'Hubungkan ke Indofinity';
+                wsBtn.className = 'w-full py-2.5 rounded-lg font-bold flex justify-center items-center gap-2 transition-all shadow-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/20';
+                wsStatusText.style.display = 'none';
+            }
+        }
+
+        function handleNewComment(user, text) {
+            const rawText = text.trim().toUpperCase();
+            const cleanText = rawText.replace(/\s+/g, ''); // Hapus semua spasi di komentar
+            const id = Date.now() + Math.random();
+            
+            // Simpan komentar asli untuk feed, tapi sertakan text yang sudah dibersihkan (cleanText)
+            comments.unshift({ id, user, text: rawText, cleanText: cleanText });
+            if (comments.length > 50) comments.pop(); // Maks 50
+
+            const isLettersOnly = /^[a-zA-Z]+$/.test(cleanText);
+            
+            if (isLettersOnly && cleanText.length > 0) {
+                const currentWordLen = cleanText.length;
+                
+                if (isAutoSwitchLength) {
+                    // Mode AUTO
+                    if (currentWordLen >= 3 && currentWordLen <= 15) {
+                        if (wordLength !== 'ALL' && currentWordLen !== wordLength) {
+                            wordLength = currentWordLen;
+                            guesses = [];
+                            pepetState = { atasWord: 'AAA', atasJarak: '', bawahWord: 'ZZZ', bawahJarak: '', containsWord: '' };
+                            guessInput.value = '';
+                            guessInput.maxLength = wordLength;
+                            guessInput.placeholder = `Ketik ${wordLength} huruf...`;
+                            sekolorPattern = Array(15).fill('empty'); // Reset sekolor pattern
+                            if(gameMode === 'sekolor' || gameMode === 'sekolor-hard') renderSekolorPattern();
+                            renderLengthButtons();
+                            renderBoard();
+                            updateUI();
+                        }
+
+                        const alreadyGuessed = guesses.some(g => g.word === cleanText);
+                        if (!alreadyGuessed) {
+                            // true = penambahan otomatis dari live chat
+                            handleAddGuess(cleanText, true);
+                        }
+                    }
+                } else {
+                    // Mode LOCK
+                    if (wordLength === 'ALL' || currentWordLen === wordLength) {
+                        const alreadyGuessed = guesses.some(g => g.word === cleanText);
+                        if (!alreadyGuessed) {
+                            handleAddGuess(cleanText, true);
+                        }
+                    }
+                }
+            }
+            
+            renderComments();
+        }
+
+        function renderComments() {
+            const children = Array.from(commentsFeed.children);
+            children.forEach(child => {
+                if (child.tagName !== 'H3') child.remove();
+            });
+
+            if (comments.length === 0) {
+                commentsFeed.appendChild(commentsEmpty);
+                return;
+            }
+
+            comments.forEach(comment => {
+                // Gunakan cleanText untuk validasi tebakan potensial
+                const isPotentialGuess = comment.cleanText && (wordLength === 'ALL' ? true : comment.cleanText.length === wordLength) && /^[a-zA-Z]+$/.test(comment.cleanText);
+                
+                const div = document.createElement('div');
+                div.className = 'bg-slate-800 p-2 rounded-lg border border-slate-700/50 break-words flex flex-col gap-0.5 hover:border-slate-600 transition-colors mt-2';
+                
+                // Memperkecil font di feed komentar
+                let innerHTML = `
+                    <div class="text-[10px] text-cyan-400 font-bold">@${comment.user}</div>
+                    <div class="text-xs text-slate-200">${comment.text}</div>
+                `;
+                div.innerHTML = innerHTML;
+
+                if (isPotentialGuess) {
+                    const btnRow = document.createElement('div');
+                    btnRow.className = 'mt-1.5 flex gap-1';
+                    
+                    if (gameMode === 'pepetterus') {
+                        btnRow.innerHTML = `
+                            <button onclick="pepetState.atasWord = '${comment.cleanText}'; renderBoard(); updateUI(); document.getElementById('pt-atas-jarak').focus();" class="flex-1 bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 border border-sky-500/30 px-2 py-1 rounded-md text-[10px] font-bold transition-colors">⬇ Set Atas</button>
+                            <button onclick="pepetState.bawahWord = '${comment.cleanText}'; renderBoard(); updateUI(); document.getElementById('pt-bawah-jarak').focus();" class="flex-1 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/30 px-2 py-1 rounded-md text-[10px] font-bold transition-colors">⬆ Set Bawah</button>
+                        `;
+                    } else {
+                        btnRow.innerHTML = `<button onclick="handleAddGuess('${comment.cleanText}', false)" class="w-full bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 hover:text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Gunakan Tebakan</button>`;
+                    }
+                    div.appendChild(btnRow);
+                }
+
+                commentsFeed.appendChild(div);
+            });
+        }
+
+        // --- EVENT LISTENERS TAMBAHAN ---
+        autoSwitchToggle.addEventListener('change', (e) => {
+            isAutoSwitchLength = e.target.checked;
+        });
+
+        function checkGuessInput() {
+            const cleanedValue = guessInput.value.replace(/\s+/g, '');
+            if (wordLength === 'ALL') {
+                addGuessBtn.disabled = cleanedValue.length === 0;
+            } else {
+                addGuessBtn.disabled = cleanedValue.length !== wordLength;
+            }
+        }
+
+        guessInput.addEventListener('input', checkGuessInput);
+        guessInput.addEventListener('keypress', (e) => {
+            // false = manual add (via enter)
+            if (e.key === 'Enter' && !addGuessBtn.disabled) handleAddGuess(null, false);
+        });
+        
+        // false = manual add (via click button)
+        addGuessBtn.addEventListener('click', () => handleAddGuess(null, false));
+        
+        resetBtn.addEventListener('click', () => {
+            guesses = [];
+            pepetState = { atasWord: 'AAA', atasJarak: '', bawahWord: 'ZZZ', bawahJarak: '', containsWord: '' };
+            renderBoard();
+            updateUI();
+            if (gameMode !== 'pepetterus') guessInput.focus();
+        });
+
+        wsBtn.addEventListener('click', toggleWebSocket);
+
+        // --- SHORTCUT KEYBOARD GLOBAL ---
+        document.addEventListener('keydown', (e) => {
+            // Fokus input (Tekan '/')
+            if (e.key === '/' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (gameMode !== 'pepetterus') {
+                    guessInput.focus();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+            // Reset Papan (Tekan 'Alt + R' atau 'Shift + Delete')
+            if ((e.altKey && e.key.toLowerCase() === 'r') || (e.shiftKey && e.key === 'Delete')) {
+                e.preventDefault();
+                if (guesses.length > 0 || pepetState.atasWord !== 'AAA' || pepetState.bawahWord !== 'ZZZ') {
+                    guesses = [];
+                    pepetState = { atasWord: 'AAA', atasJarak: '', bawahWord: 'ZZZ', bawahJarak: '', containsWord: '' };
+                    renderBoard();
+                    updateUI();
+                    if (gameMode !== 'pepetterus') guessInput.focus();
+                }
+            }
+        });
+
+        // --- MULAI APLIKASI ---
+        renderLengthButtons();
+        checkGuessInput();
+        loadDictionary('IDN.json');
+
+    </script>
+</body>
+</html>
