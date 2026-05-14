@@ -208,6 +208,7 @@
                             <div class="flex gap-2">
                                 <select id="dict-source" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
                                     <option value="IDN.json">IDN.json (Bahasa Indonesia)</option>
+                                    <option value="KBBI.txt">KBBI.txt (Daftar Kata KBBI)</option>
                                     <option value="ENG.json">ENG.json (Format JSON)</option>
                                     <option value="MIXED">Campuran (IDN + ENG)</option>
                                     <option value="dictionary.txt">dictionary.txt (Format Teks Per Baris)</option>
@@ -1283,7 +1284,7 @@
                 }
             }
 
-            // AUTO-INHERIT LOGIC: Menyalin warna/status dari huruf yang sama di posisi yang sama dari tebakan sebelumnya
+            // AUTO-INHERIT LOGIC: Hanya menyalin warna/status dari tebakan sebelumnya JIKA BERADA DI MODE NORMAL
             let newStatuses = Array(currentWordLen).fill('gray');
             let newKpColors = Array(currentWordLen).fill('empty');
             let newAkColors = Array(currentWordLen).fill('empty');
