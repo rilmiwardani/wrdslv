@@ -183,9 +183,13 @@
                         </span>
                     </div>
 
-                    <!-- Input Pencarian Saran -->
-                    <div class="relative z-10 mb-4 shrink-0">
-                        <input type="text" id="search-saran" placeholder="Cari kata spesifik di daftar ini..." class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono shadow-inner transition-colors" />
+                    <!-- Input Pencarian Saran & Filter Huruf Unik -->
+                    <div class="flex flex-col sm:flex-row gap-2 relative z-10 mb-4 shrink-0">
+                        <input type="text" id="search-saran" placeholder="Cari kata spesifik di daftar ini..." class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono shadow-inner transition-colors" />
+                        <label class="flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-slate-800 transition-colors shrink-0">
+                            <input type="checkbox" id="unique-letters-toggle" class="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-600 rounded focus:ring-emerald-500 cursor-pointer" />
+                            <span class="text-xs font-bold text-slate-300 whitespace-nowrap select-none">Huruf Unik Saja</span>
+                        </label>
                     </div>
 
                     <div class="bg-slate-900 p-4 rounded-xl flex-1 overflow-y-auto border border-slate-700 relative z-10" id="possible-words-container">
@@ -290,6 +294,7 @@
         let ws = null;
         let connectionStatus = 'disconnected'; 
         let isAutoSwitchLength = true; 
+        let isUniqueLettersOnly = false; // Filter Huruf Unik
         let gameMode = 'normal'; // 'normal', 'tipu', 'salah-sendiri', 'ketempelan', 'belah-tengah', 'buta', 'matabatin', 'jagajarak', 'sekolor', 'sekolor-hard', 'konekdot', 'kasihpaham', 'pepetterus', 'acakolor'
         let sekolorPattern = Array(15).fill('empty'); 
         const sekolorColors = ['empty', 'blue', 'red', 'yellow', 'purple'];
@@ -352,6 +357,7 @@
         const commentsEmpty = document.getElementById('comments-empty');
         const autoSwitchToggle = document.getElementById('auto-switch-toggle');
         const searchSaranInput = document.getElementById('search-saran');
+        const uniqueLettersToggle = document.getElementById('unique-letters-toggle');
 
         // Referensi Mode Permainan
         const modeNormalBtn = document.getElementById('mode-normal-btn');
@@ -387,8 +393,12 @@
         const mapYellowInput = document.getElementById('map-yellow');
         const mapPurpleInput = document.getElementById('map-purple');
 
-        // --- EVENT LISTENER UNTUK PENCARIAN SARAN KATA ---
+        // --- EVENT LISTENER UNTUK PENCARIAN & FILTER SARAN KATA ---
         searchSaranInput.addEventListener('input', updateUI);
+        uniqueLettersToggle.addEventListener('change', (e) => {
+            isUniqueLettersOnly = e.target.checked;
+            updateUI();
+        });
 
         // --- INIT: LOAD KAMUS OTOMATIS ---
         function loadDictionary(source = 'IDN.json') {
@@ -1802,6 +1812,13 @@
             const searchVal = searchSaranInput.value.toUpperCase().trim();
             if (searchVal) {
                 possibleWordsObjs = possibleWordsObjs.filter(obj => obj.word.includes(searchVal));
+            }
+
+            // --- FILTER HURUF UNIK (NO REPEAT LETTERS) ---
+            if (isUniqueLettersOnly) {
+                possibleWordsObjs = possibleWordsObjs.filter(obj => {
+                    return new Set(obj.word.split('')).size === obj.word.length;
+                });
             }
             
             possibleCount.textContent = `${possibleWordsObjs.length} kata`;
