@@ -61,6 +61,7 @@
                                 Tambah
                             </button>
                         </div>
+                        <div id="guess-explainer" class="hidden mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/30 p-2 rounded-lg"></div>
                     </div>
                 </div>
 
@@ -212,9 +213,14 @@
                             <div class="flex gap-2">
                                 <select id="dict-source" class="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
                                     <option value="IDN.json">IDN.json (Bahasa Indonesia)</option>
+                                    <option value="KATLA.json">KATLA.json (Katla Common Words)</option>
+                                    <option value="ENG.json">ENG.json (Bahasa Inggris)</option>
+                                    <option value="JV.json">JV.json (Bahasa Jawa)</option>
+                                    <option value="SU.json">SU.json (Bahasa Sunda)</option>
+                                    <option value="MS.json">MS.json (Bahasa Melayu)</option>
+                                    <option value="IDEN.json">IDEN.json (Campuran IDN + ENG)</option>
+                                    <option value="MIXED">Campuran Load Manual (IDN + ENG)</option>
                                     <option value="KBBI.txt">KBBI.txt (Daftar Kata KBBI)</option>
-                                    <option value="ENG.json">ENG.json (Format JSON)</option>
-                                    <option value="MIXED">Campuran (IDN + ENG)</option>
                                     <option value="dictionary.txt">dictionary.txt (Format Teks Per Baris)</option>
                                 </select>
                                 <button id="load-source-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
@@ -2199,12 +2205,101 @@
             isAutoSwitchLength = e.target.checked;
         });
 
+        function explainInvalidWord(candidateStr) {
+            candidateStr = candidateStr.toUpperCase();
+            if (wordLength !== 'ALL' && candidateStr.length !== wordLength) return null;
+            if (guesses.length === 0) return null;
+            if (gameMode !== 'normal' && gameMode !== 'buta') return null;
+            
+            const activeGuesses = guesses.filter(g => !g.disabled);
+            if (activeGuesses.length === 0) return null;
+            
+            if (gameMode === 'normal') {
+                for (let rowIdx = 0; rowIdx < activeGuesses.length; rowIdx++) {
+                    let guess = activeGuesses[rowIdx];
+                    if (candidateStr.length !== guess.word.length) continue;
+                    
+                    let inputStatuses = guess.statuses; 
+                    let realStatuses = simulateWordle(guess.word.toUpperCase(), candidateStr);
+                    
+                    for (let i = 0; i < guess.word.length; i++) {
+                        if (realStatuses[i] !== inputStatuses[i]) {
+                            let expected = inputStatuses[i];
+                            let got = realStatuses[i];
+                            let char = guess.word[i].toUpperCase();
+                            let pos = i + 1;
+                            let baris = rowIdx + 1;
+                            
+                            if (expected === 'green') {
+                                return `Tunggu dulu! Huruf ke-${pos} seharusnya '${char}' (clue baris ${baris} berwarna Hijau).`;
+                            }
+                            if (expected === 'gray') {
+                                if (got === 'green' || got === 'yellow') {
+                                    return `Kata tidak valid! Huruf '${char}' sudah terbukti tidak ada atau jumlahnya melebihi batas (clue baris ${baris} berwarna Abu-abu).`;
+                                }
+                            }
+                            if (expected === 'yellow') {
+                                if (got === 'green') {
+                                    return `Huruf '${char}' tidak boleh ditaruh di posisi ke-${pos} (clue baris ${baris} berwarna Kuning = salah tempat).`;
+                                }
+                                if (got === 'gray') {
+                                    return `Kata harus mengandung huruf '${char}' (clue baris ${baris} berwarna Kuning).`;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (gameMode === 'buta') {
+                for (let rowIdx = 0; rowIdx < activeGuesses.length; rowIdx++) {
+                    let guess = activeGuesses[rowIdx];
+                    if (candidateStr.length !== guess.word.length) continue;
+                    
+                    let realStatuses = simulateWordle(guess.word.toUpperCase(), candidateStr);
+                    let simGreenCount = 0;
+                    let simYellowCount = 0;
+                    for (let i = 0; i < guess.word.length; i++) {
+                        if (realStatuses[i] === 'green') simGreenCount++;
+                        if (realStatuses[i] === 'yellow') simYellowCount++;
+                    }
+                    
+                    if (simGreenCount !== guess.greenCount || simYellowCount !== guess.yellowCount) {
+                        let baris = rowIdx + 1;
+                        return `Di Mode Sekata Buta (baris ${baris}), tebakanmu menghasilkan ${simGreenCount} Hijau & ${simYellowCount} Kuning. Padahal clue yang kamu masukkan adalah ${guess.greenCount} Hijau & ${guess.yellowCount} Kuning.`;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
         function checkGuessInput() {
             const cleanedValue = guessInput.value.replace(/\s+/g, '');
+            let isLengthValid = false;
+            
             if (wordLength === 'ALL') {
-                addGuessBtn.disabled = cleanedValue.length === 0;
+                isLengthValid = cleanedValue.length > 0;
             } else {
-                addGuessBtn.disabled = cleanedValue.length !== wordLength;
+                isLengthValid = cleanedValue.length === wordLength;
+            }
+            
+            addGuessBtn.disabled = !isLengthValid;
+            
+            // Host Explainer Logic
+            const explainerDiv = document.getElementById('guess-explainer');
+            if (isLengthValid && explainerDiv) {
+                const explanation = explainInvalidWord(cleanedValue);
+                if (explanation) {
+                    explainerDiv.textContent = explanation;
+                    explainerDiv.classList.remove('hidden');
+                } else {
+                    explainerDiv.classList.add('hidden');
+                    explainerDiv.textContent = '';
+                }
+            } else if (explainerDiv) {
+                explainerDiv.classList.add('hidden');
+                explainerDiv.textContent = '';
             }
         }
 
