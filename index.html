@@ -1405,9 +1405,52 @@
             return result;
         }
 
+        // --- SIMULASI KODE KASIH PAHAM (BERSEKATA BUGGY LOGIC) ---
+        // Mode Kasih Paham di Bersekata memiliki bug dalam menghitung warna kuning,
+        // di mana ia menerapkan warna kuning pada indeks tebakan berdasarkan huruf target,
+        // yang dapat menghasilkan warna kuning pada kotak huruf yang salah.
+        // Fungsi ini mereplikasi bug tersebut secara persis agar solver akurat 100% terhadap game.
+        function simulateKasihPaham(guessStr, secretStr) {
+            const result = Array(guessStr.length).fill('gray');
+            const counts = {};
+
+            for (let i = 0; i < guessStr.length; i++) {
+                const ch = guessStr[i];
+                let found = false;
+                for (let j = 0; j < secretStr.length; j++) {
+                    if (ch === secretStr[j]) {
+                        counts[ch] = (counts[ch] || 0) + 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) counts[ch] = counts[ch] || 0;
+            }
+
+            for (let i = 0; i < guessStr.length; i++) {
+                if (secretStr[i] === guessStr[i]) {
+                    result[i] = 'green';
+                    counts[guessStr[i]]--;
+                }
+            }
+
+            for (let i = 0; i < guessStr.length; i++) {
+                if (result[i] === 'gray') {
+                    for (const ch in counts) {
+                        if (secretStr[i] === ch && counts[ch] > 0) {
+                            result[i] = 'yellow';
+                            counts[ch]--;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
         // --- SIMULASI KODE JAGA JARAK ---
         function simulateJagaJarak(guessStr, targetStr) {
-            let result = [];
             for (let i = 0; i < guessStr.length; i++) {
                 let diff = Math.abs(guessStr.charCodeAt(i) - targetStr.charCodeAt(i));
                 if (diff === 0) result.push('green');
@@ -1645,7 +1688,10 @@
                         let currentPermError = 0;
                         for (let guess of activeGuesses) {
                             let guessStr = guess.word.toUpperCase();
-                            let realStatuses = simulateWordle(guessStr, candidateStr);
+                            // Gunakan fungsi simulasi yang buggy KHUSUS untuk mode Kasih Paham / Acakolor agar sinkron dengan game
+                            let realStatuses = (gameMode === 'kasihpaham' || gameMode === 'acakolor') 
+                                                ? simulateKasihPaham(guessStr, candidateStr) 
+                                                : simulateWordle(guessStr, candidateStr);
                             
                             for (let i = 0; i < guess.word.length; i++) {
                                 let screenColor = gameMode === 'kasihpaham' ? guess.kpColors[i] : guess.akColors[i]; 
@@ -1780,7 +1826,6 @@
                     results = results.filter(r => r.errorCount === 0);
                 } else {
                     let tolerance = 1;
-                    if (gameMode === 'kasihpaham' || gameMode === 'acakolor') tolerance = 4; // High tolerance for bugs
                     results = results.filter(r => r.errorCount <= bestError + tolerance);
                 }
             }
@@ -1899,6 +1944,20 @@
                 const flexWrap = document.createElement('div');
                 flexWrap.className = 'flex flex-wrap gap-2 items-center';
                 
+                const topWordsWrap = document.createElement('div');
+                topWordsWrap.className = 'flex flex-wrap gap-2 items-center mb-4';
+                const topTitle = document.createElement('div');
+                topTitle.className = 'w-full text-xs font-bold text-yellow-400 uppercase tracking-widest mb-1 border-b border-yellow-500/30 pb-1';
+                topTitle.textContent = isStart ? '🔥 SARAN KATA PEMBUKA TERBAIK' : '🔥 SARAN KATA TERBAIK';
+                topWordsWrap.appendChild(topTitle);
+
+                const otherWordsWrap = document.createElement('div');
+                otherWordsWrap.className = 'flex flex-wrap gap-2 items-center';
+                const otherTitle = document.createElement('div');
+                otherTitle.className = 'w-full text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1 border-b border-emerald-500/30 pb-1 mt-2';
+                otherTitle.textContent = '✔️ KATA MASUK AKAL SESUAI CLUE';
+                otherWordsWrap.appendChild(otherTitle);
+                
                 let displayWords = possibleWordsObjs;
                 let isTruncated = false;
                 let truncatedMsg = '';
@@ -1923,6 +1982,9 @@
                     }
                 }
                 
+                let hasTopWords = false;
+                let hasOtherWords = false;
+
                 displayWords.forEach((obj, index) => {
                     const span = document.createElement('span');
                     
@@ -1963,6 +2025,8 @@
                         }
                     }
 
+                    let isTopWord = false;
+
                     // Render Konekdot Visuals
                     if (gameMode === 'konekdot' && activeGuesses.length > 0) {
                         let lastGuess = activeGuesses[activeGuesses.length - 1].word;
@@ -1995,10 +2059,12 @@
                             let badgeText = isStart ? 'PEMBUKA AMPUH' : 'TERBAIK';
                             span.className = 'bg-yellow-500/20 text-yellow-300 px-2 py-1.5 rounded-lg font-mono text-xs border border-yellow-500/50 hover:border-yellow-400 cursor-default shadow-sm font-bold flex items-center transition-all';
                             span.innerHTML = `<svg class="mr-1 shrink-0" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ${wordHTML} <span class="opacity-80 text-[9px] ml-1 text-yellow-200">(${badgeText})</span>${extraInfo}`;
+                            isTopWord = true;
                         } else if (possibleWordsObjs.length === 1 && obj.errorCount === 0 && (!isStart || gameMode === 'sekolor' || gameMode === 'sekolor-hard')) {
                             // Jawaban Pasti Sempurna
                             span.className = 'bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-lg font-mono text-sm border border-emerald-500/50 hover:border-emerald-400 cursor-default shadow-sm font-bold flex items-center animate-pulse';
                             span.innerHTML = `<svg class="mr-1 shrink-0" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> JAWABAN: ${wordHTML}${extraInfo}`;
+                            isTopWord = true;
                         } else {
                             // Kata biasa
                             span.className = 'bg-slate-800 text-slate-200 px-2 py-1.5 rounded-lg font-mono text-xs border border-slate-700 hover:border-slate-500 cursor-default shadow-sm transition-all flex items-center';
@@ -2006,17 +2072,37 @@
                         }
                     }
                     
-                    flexWrap.appendChild(span);
+                    if (gameMode === 'konekdot' || gameMode === 'pepetterus' || gameMode === 'belah-tengah') {
+                        flexWrap.appendChild(span);
+                    } else {
+                        if (isTopWord) {
+                            topWordsWrap.appendChild(span);
+                            hasTopWords = true;
+                        } else {
+                            otherWordsWrap.appendChild(span);
+                            hasOtherWords = true;
+                        }
+                    }
                 });
 
-                if (isTruncated) {
-                    const more = document.createElement('span');
-                    more.className = 'text-slate-500 text-xs py-1.5 px-2 font-mono';
-                    more.textContent = truncatedMsg;
-                    flexWrap.appendChild(more);
+                if (gameMode === 'konekdot' || gameMode === 'pepetterus' || gameMode === 'belah-tengah') {
+                    if (isTruncated) {
+                        const more = document.createElement('span');
+                        more.className = 'text-slate-500 text-xs py-1.5 px-2 font-mono';
+                        more.textContent = truncatedMsg;
+                        flexWrap.appendChild(more);
+                    }
+                    possibleWordsContainer.appendChild(flexWrap);
+                } else {
+                    if (isTruncated) {
+                        const more = document.createElement('span');
+                        more.className = 'text-slate-500 text-xs py-1.5 px-2 font-mono';
+                        more.textContent = truncatedMsg;
+                        otherWordsWrap.appendChild(more);
+                    }
+                    if (hasTopWords) possibleWordsContainer.appendChild(topWordsWrap);
+                    if (hasOtherWords) possibleWordsContainer.appendChild(otherWordsWrap);
                 }
-
-                possibleWordsContainer.appendChild(flexWrap);
             } else {
                 possibleWordsContainer.innerHTML = '<div class="text-slate-500 text-center py-4">Tidak ada kata di kamus yang cocok dengan kondisi saat ini.</div>';
             }
@@ -2205,7 +2291,7 @@
             isAutoSwitchLength = e.target.checked;
         });
 
-        function explainInvalidWord(candidateStr) {
+        function explainWordValidity(candidateStr) {
             candidateStr = candidateStr.toUpperCase();
             if (wordLength !== 'ALL' && candidateStr.length !== wordLength) return null;
             if (guesses.length === 0) return null;
@@ -2231,43 +2317,77 @@
                             let baris = rowIdx + 1;
                             
                             if (expected === 'green') {
-                                return `Tunggu dulu! Huruf ke-${pos} seharusnya '${char}' (clue baris ${baris} berwarna Hijau).`;
+                                return `<span class="text-red-400 font-bold">❌ Jangan Pakai Kata Ini!</span><br>Coba lihat baris ${baris} deh. Di situ kotak ke-${pos} kan warnanya udah <b>Hijau</b> untuk huruf '<b>${char}</b>'. Masa kamu malah masukin huruf lain sih? Fokus guys!`;
                             }
                             if (expected === 'gray') {
                                 if (got === 'green' || got === 'yellow') {
-                                    return `Kata tidak valid! Huruf '${char}' sudah terbukti tidak ada atau jumlahnya melebihi batas (clue baris ${baris} berwarna Abu-abu).`;
+                                    return `<span class="text-red-400 font-bold">❌ Aduh, Nggak Bisa Dipakai!</span><br>Di baris ${baris}, huruf '<b>${char}</b>' kan udah <b>Abu-abu</b> (artinya hurufnya udah mati/nggak ada lagi). Kenapa malah ditebak lagi coba?`;
                                 }
                             }
                             if (expected === 'yellow') {
                                 if (got === 'green') {
-                                    return `Huruf '${char}' tidak boleh ditaruh di posisi ke-${pos} (clue baris ${baris} berwarna Kuning = salah tempat).`;
+                                    return `<span class="text-red-400 font-bold">❌ Salah Tempat Bang!</span><br>Di baris ${baris}, huruf '<b>${char}</b>' kan dapet <b>Kuning</b> di kotak ke-${pos}. Kuning itu artinya pindah dong posisinya, jangan ditaruh di situ lagi!`;
                                 }
                                 if (got === 'gray') {
-                                    return `Kata harus mengandung huruf '${char}' (clue baris ${baris} berwarna Kuning).`;
+                                    return `<span class="text-red-400 font-bold">❌ Eh, Ada Huruf yang Hilang!</span><br>Kamu lupa masukin huruf '<b>${char}</b>' ya? Padahal di baris ${baris} huruf itu dapet <b>Kuning</b> loh, artinya wajib dibawa terus di tebakan selanjutnya!`;
                                 }
                             }
                         }
                     }
                 }
+                return `<span class="text-emerald-400 font-bold">✅ Mantap! Bisa Dipakai!</span><br>Kata "<b>${candidateStr}</b>" ini udah pas banget sama semua syarat <b>Hijau</b> dan <b>Kuning</b> yang kita punya. Gasss input!`;
             }
             
             if (gameMode === 'buta') {
+                let validMessages = [];
                 for (let rowIdx = 0; rowIdx < activeGuesses.length; rowIdx++) {
                     let guess = activeGuesses[rowIdx];
                     if (candidateStr.length !== guess.word.length) continue;
                     
-                    let realStatuses = simulateWordle(guess.word.toUpperCase(), candidateStr);
+                    let guessWord = guess.word.toUpperCase();
+                    let realStatuses = simulateWordle(guessWord, candidateStr);
                     let simGreenCount = 0;
                     let simYellowCount = 0;
-                    for (let i = 0; i < guess.word.length; i++) {
-                        if (realStatuses[i] === 'green') simGreenCount++;
-                        if (realStatuses[i] === 'yellow') simYellowCount++;
+                    let greenLetters = [];
+                    let yellowLetters = [];
+                    let grayLetters = [];
+
+                    for (let i = 0; i < guessWord.length; i++) {
+                        let char = guessWord[i];
+                        if (realStatuses[i] === 'green') {
+                            simGreenCount++;
+                            greenLetters.push(`'<b>${char}</b>'`);
+                        } else if (realStatuses[i] === 'yellow') {
+                            simYellowCount++;
+                            yellowLetters.push(`'<b>${char}</b>'`);
+                        } else {
+                            grayLetters.push(`'<b>${char}</b>'`);
+                        }
                     }
                     
+                    let uniqueGreen = [...new Set(greenLetters)];
+                    let uniqueYellow = [...new Set(yellowLetters)];
+                    let uniqueGray = [...new Set(grayLetters)];
+                    
+                    let anggapanList = [];
+                    if (uniqueGreen.length > 0) anggapanList.push(`yang <b>Hijau</b> tuh huruf ${uniqueGreen.join(', ')}`);
+                    if (uniqueYellow.length > 0) anggapanList.push(`yang <b>Kuning</b> huruf ${uniqueYellow.join(', ')}`);
+                    if (uniqueGray.length > 0) anggapanList.push(`huruf ${uniqueGray.join(', ')} dianggap <b>mati atau Abu-abu</b>`);
+                    
+                    let anggapanStr = anggapanList.length > 1 
+                        ? anggapanList.slice(0, -1).join(', ') + ', dan ' + anggapanList[anggapanList.length - 1]
+                        : (anggapanList[0] || 'semua huruf dianggap mati');
+
                     if (simGreenCount !== guess.greenCount || simYellowCount !== guess.yellowCount) {
                         let baris = rowIdx + 1;
-                        return `Di Mode Sekata Buta (baris ${baris}), tebakanmu menghasilkan ${simGreenCount} Hijau & ${simYellowCount} Kuning. Padahal clue yang kamu masukkan adalah ${guess.greenCount} Hijau & ${guess.yellowCount} Kuning.`;
+                        return `<span class="text-red-400 font-bold">❌ Nggak Nyambung, Guys!</span><br>Kalau kamu masukin "<b>${candidateStr}</b>", itu sama aja kamu ngotot kalau di baris ${baris} ("<b>${guessWord}</b>") ${anggapanStr}.<br><span class="text-slate-400 italic text-xs">(Total anggapanmu: ${simGreenCount} Hijau & ${simYellowCount} Kuning).</span><br><br>Padahal petunjuk asli di baris ${baris} itu mintanya <b>${guess.greenCount} Hijau & ${guess.yellowCount} Kuning</b>! Tuh, jumlahnya beda kan? Makanya kata ini otomatis ditolak.<br><br><div class="mt-2 p-2 bg-sky-900/30 border border-sky-500/30 rounded-lg text-sky-200 text-xs leading-relaxed"><span class="font-bold text-sky-400">💡 TRIK MAIN SEKATA BUTA:</span><br>Daripada pusing nyari huruf yang sama, coba deh sekali-sekali tebak kata yang hurufnya <b>BEDA TOTAL 100%</b> dari tebakan sebelumnya! Ini namanya <span class="font-bold">Metode Eliminasi</span> buat mancing dan bongkar huruf mana aja yang sebenernya kepake.</div>`;
+                    } else {
+                        let baris = rowIdx + 1;
+                        validMessages.push(`<b>Baris ${baris} ("${guessWord}")</b>: Kamu menganggap ${anggapanStr}. (Sesuai dengan clue <b>${simGreenCount} Hijau & ${simYellowCount} Kuning</b>!)`);
                     }
+                }
+                if (validMessages.length > 0) {
+                    return `<span class="text-emerald-400 font-bold">✅ Cakep! Kata Ini Masuk Akal!</span><br>Kalau beneran jawabannya "<b>${candidateStr}</b>", berarti anggapan kita di tebakan sebelumnya udah bener banget nih:<br><br>${validMessages.map(msg => '👉 ' + msg).join('<br><br>')} <br><br>Aman buat diinput, gasss!`;
                 }
             }
             
@@ -2289,17 +2409,17 @@
             // Host Explainer Logic
             const explainerDiv = document.getElementById('guess-explainer');
             if (isLengthValid && explainerDiv) {
-                const explanation = explainInvalidWord(cleanedValue);
+                const explanation = explainWordValidity(cleanedValue);
                 if (explanation) {
-                    explainerDiv.textContent = explanation;
+                    explainerDiv.innerHTML = explanation;
                     explainerDiv.classList.remove('hidden');
                 } else {
                     explainerDiv.classList.add('hidden');
-                    explainerDiv.textContent = '';
+                    explainerDiv.innerHTML = '';
                 }
             } else if (explainerDiv) {
                 explainerDiv.classList.add('hidden');
-                explainerDiv.textContent = '';
+                explainerDiv.innerHTML = '';
             }
         }
 
