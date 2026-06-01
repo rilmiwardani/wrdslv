@@ -406,6 +406,20 @@
             updateUI();
         });
 
+        dictSourceSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'CUSTOM') {
+                customDictTextarea.parentElement.classList.remove('hidden');
+                fileUploadInput.parentElement.classList.remove('hidden');
+                loadSourceBtn.classList.remove('hidden');
+            } else {
+                customDictTextarea.parentElement.classList.add('hidden');
+                fileUploadInput.parentElement.classList.add('hidden');
+                loadSourceBtn.classList.add('hidden');
+                loadDictionary(val);
+            }
+        });
+
         // --- INIT: LOAD KAMUS OTOMATIS ---
         function loadDictionary(source = 'IDN.json') {
             possibleWordsContainer.innerHTML = `<div class="text-cyan-400 text-center py-4 text-sm animate-pulse">Sedang memuat daftar kata... Mohon tunggu.</div>`;
