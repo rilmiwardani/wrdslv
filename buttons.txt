@@ -1,0 +1,33 @@
+<button class="home-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house home-icon" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></button>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house home-icon" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+<button class="overlay-toggle-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu menu-icon" aria-hidden="true"><path d="M4 12h16"></path><path d="M4 18h16"></path><path d="M4 6h16"></path></svg></button>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu menu-icon" aria-hidden="true"><path d="M4 12h16"></path><path d="M4 18h16"></path><path d="M4 6h16"></path></svg>
+<button class="giveup-btn">Menyerah</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">Q</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">W</button>
+<button class="keyboard-key " style="background-color: rgb(244, 158, 147); color: black;">E</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">R</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">T</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">Y</button>
+<button class="keyboard-key " style="background-color: rgb(244, 158, 147); color: black;">U</button>
+<button class="keyboard-key " style="background-color: rgb(244, 158, 147); color: black;">I</button>
+<button class="keyboard-key " style="background-color: rgb(244, 158, 147); color: black;">O</button>
+<button class="keyboard-key " style="background-color: rgb(144, 206, 244); color: black;">P</button>
+<button class="keyboard-key " style="background-color: rgb(244, 158, 147); color: black;">A</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">S</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">D</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">F</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">G</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">H</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">J</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">K</button>
+<button class="keyboard-key " style="background-color: rgb(255, 241, 168); color: black;">L</button>
+<button class="keyboard-key special-key" style="background-color: rgb(232, 232, 232); color: black; min-width: 70px;">⌫</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">Z</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">X</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">C</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">V</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">B</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">N</button>
+<button class="keyboard-key " style="background-color: rgb(169, 128, 234); color: black;">M</button>
+<button class="keyboard-key special-key" style="background-color: rgb(232, 232, 232); color: black; min-width: 70px;">ENTER</button>

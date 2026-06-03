@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasih Paham Solver</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --green:#22c55e; --yellow:#eab308; --gray:#64748b; --pink:#ff9acd; --blue:#7ec8ff; --white:#ffffff; }
+  body { background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, sans-serif; margin:0; padding:16px; }
+  h1 { font-size:1.25rem; margin:0 0 12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  select, input, button { background: var(--card); color: var(--text); border:1px solid #334155; border-radius:6px; padding:8px 10px; font-size:0.95rem; }
+  button { cursor:pointer; border:none; }
+  button.primary { background:#2563eb; }
+  button.primary:hover { background:#1d4ed8; }
+  button.danger { background:#ef4444; }
+  .guess-box { display:flex; gap:4px; flex-wrap:wrap; margin:6px 0; align-items:center; }
+  .word { display:flex; gap:4px; }
+  .tile { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:4px; font-weight:700; text-transform:uppercase; cursor:pointer; user-select:none; background: var(--gray); border:2px solid #475569; font-size:0.95rem; }
+  .tile.pink { background: var(--pink); color:#000; border-color: var(--pink); }
+  .tile.blue { background: var(--blue); color:#000; border-color: var(--blue); }
+  .tile.white { background: var(--white); color:#000; border-color: var(--white); }
+  .tile.gray { background: var(--gray); color:#cbd5e1; border-color: #475569; }
+  .guess-line { background:#0b1220; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; margin-bottom:8px; }
+  .results { margin-top:12px; }
+  .candidate { background: var(--card); padding:6px 10px; border-radius:6px; margin:4px 0; }
+  .small { font-size:0.8rem; color:#94a3b8; }
+  .info { font-size:0.8rem; color:#94a3b8; margin:4px 0; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<h1>Kasih Paham Solver</h1>
+
+<div class="row">
+  <label>Bahasa:</label>
+  <select id="lang">
+    <option value="id">Indonesia</option>
+    <option value="en">English</option>
+    <option value="ms">Melayu</option>
+    <option value="jv">Jawa</option>
+    <option value="su">Sunda</option>
+    <option value="iden">Indonesia + Inggris</option>
+  </select>
+  <label>Panjang:</label>
+  <select id="wordLength">
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5" selected>5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="15">15</option>
+  </select>
+  <button class="primary" onclick="addGuess()">+ Tambah Tebakan</button>
+  <button class="primary" onclick="solve()">Solve</button>
+  <button class="danger" onclick="resetAll()">Reset</button>
+</div>
+
+<div class="info">
+  Klik kotak untuk cycle warna: Abu-abu → <b style="color:#ff9acd">Pink</b> → <b style="color:#7ec8ff">Biru</b> → <b style="color:#fff">Putih</b><br>
+  <small>(Pink, Biru, Putih = warna acak dari game. Solver akan mencoba semua kombinasi mapping.)</small>
+</div>
+
+<div id="guesses"></div>
+
+<div class="results">
+  <div class="small">Kemungkinan kata:</div>
+  <div id="output"></div>
+</div>
+
+<script src="kasihpaham_data.js"></script>
+
+<script>
+const COLORS = ['gray','pink','blue','white'];
+const SEMANTIC = ['green','yellow','gray']; // internal semantic colors
+const MAPPINGS = [
+  {green:'pink', yellow:'blue', gray:'white'},
+  {green:'pink', yellow:'white', gray:'blue'},
+  {green:'blue', yellow:'pink', gray:'white'},
+  {green:'blue', yellow:'white', gray:'pink'},
+  {green:'white', yellow:'pink', gray:'blue'},
+  {green:'white', yellow:'blue', gray:'pink'}
+];
+
+const WORDS = {
+  id: (typeof KASIHPAHAM_ID !== 'undefined' ? KASIHPAHAM_ID : {}),
+  en: (typeof KASIHPAHAM_EN !== 'undefined' ? KASIHPAHAM_EN : {}),
+  ms: (typeof KASIHPAHAM_MS !== 'undefined' ? KASIHPAHAM_MS : {}),
+  jv: (typeof KASIHPAHAM_JV !== 'undefined' ? KASIHPAHAM_JV : {}),
+  su: (typeof KASIHPAHAM_SU !== 'undefined' ? KASIHPAHAM_SU : {}),
+  iden: (typeof KASIHPAHAM_IDEN !== 'undefined' ? KASIHPAHAM_IDEN : {})
+};
+
+function normalizeChar(ch) {
+  if (!ch || typeof ch !== 'string') return '';
+  return ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function compareChars(a, b) {
+  return normalizeChar(a) === normalizeChar(b);
+}
+
+function evaluateGuess(target, guess) {
+  const result = Array(guess.length).fill('gray');
+  const counts = {};
+
+  // Count occurrences of each guessed letter in the target
+  for (let i = 0; i < guess.length; i++) {
+    const ch = guess[i];
+    let found = false;
+    for (let j = 0; j < target.length; j++) {
+      if (compareChars(ch, target[j])) {
+        counts[ch] = (counts[ch] || 0) + 1;
+        found = true;
+        break;
+      }
+    }
+    if (!found) counts[ch] = counts[ch] || 0;
+  }
+
+  // Mark greens
+  for (let i = 0; i < guess.length; i++) {
+    if (compareChars(target[i], guess[i])) {
+      result[i] = 'green';
+      counts[guess[i]]--;
+    }
+  }
+
+  // Mark yellows
+  for (let i = 0; i < guess.length; i++) {
+    if (result[i] === 'gray') {
+      for (const ch in counts) {
+        if (compareChars(target[i], ch) && counts[ch] > 0) {
+          result[i] = 'yellow';
+          counts[ch]--;
+          break;
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+function guessMatches(guess, target, feedback, mapping) {
+  const ev = evaluateGuess(target, guess);
+  for (let i = 0; i < ev.length; i++) {
+    const semanticColor = ev[i]; // green, yellow, gray
+    const mappedColor = mapping[semanticColor]; // pink, blue, white
+    if (mappedColor !== feedback[i]) return false;
+  }
+  return true;
+}
+
+let guessCount = 0;
+function addGuess(text='') {
+  guessCount++;
+  const id = guessCount;
+  const len = parseInt(document.getElementById('wordLength').value);
+  const container = document.getElementById('guesses');
+  const line = document.createElement('div');
+  line.className = 'guess-line';
+  line.id = 'guess-'+id;
+  line.innerHTML = `
+    <div class="row" style="margin-bottom:6px;">
+      <input type="text" id="text-${id}" value="${text.replace(/"/g,'&quot;')}" placeholder="Tebakan..." style="flex:1;min-width:220px;" oninput="renderGuess(${id})">
+      <button class="danger" onclick="removeGuess(${id})">Hapus</button>
+    </div>
+    <div class="guess-box" id="box-${id}"></div>
+  `;
+  container.appendChild(line);
+  if (text) renderGuess(id);
+  else renderEmptyGuess(id, len);
+}
+
+function renderEmptyGuess(id, len) {
+  const box = document.getElementById('box-'+id);
+  box.innerHTML = '';
+  const wordDiv = document.createElement('div'); wordDiv.className='word';
+  for (let i=0; i<len; i++) {
+    const tile = document.createElement('div'); tile.className='tile gray';
+    tile.textContent = '';
+    tile.dataset.i = i;
+    tile.onclick = () => cycleColor(tile);
+    wordDiv.appendChild(tile);
+  }
+  box.appendChild(wordDiv);
+}
+
+function renderGuess(id) {
+  const text = document.getElementById('text-'+id).value.trim();
+  const box = document.getElementById('box-'+id);
+  box.innerHTML = '';
+  if (!text) return;
+
+  const wordDiv = document.createElement('div'); wordDiv.className='word';
+  for (let i=0; i<text.length; i++) {
+    const tile = document.createElement('div'); tile.className='tile gray';
+    tile.textContent = text[i].toLowerCase();
+    tile.dataset.i = i;
+    tile.onclick = () => cycleColor(tile);
+    wordDiv.appendChild(tile);
+  }
+  box.appendChild(wordDiv);
+}
+
+function removeGuess(id){ const el=document.getElementById('guess-'+id); if(el) el.remove(); }
+function resetAll(){ document.getElementById('guesses').innerHTML=''; document.getElementById('output').innerHTML=''; guessCount=0; }
+
+function cycleColor(tile) {
+  const idx = (COLORS.indexOf(
+    tile.classList.contains('pink')?'pink':
+    tile.classList.contains('blue')?'blue':
+    tile.classList.contains('white')?'white':'gray'
+  ) + 1) % COLORS.length;
+  tile.className = 'tile ' + COLORS[idx];
+}
+
+function getFeedback(id) {
+  const text = document.getElementById('text-'+id).value.trim();
+  const box = document.getElementById('box-'+id);
+  const tiles = box.querySelectorAll('.tile');
+  const feedback = [];
+  for (let i=0; i<tiles.length; i++) {
+    const cls = tiles[i].className;
+    let color='gray';
+    if (cls.includes('pink')) color='pink';
+    else if (cls.includes('blue')) color='blue';
+    else if (cls.includes('white')) color='white';
+    feedback.push(color);
+  }
+  return { word: text.toLowerCase(), feedback };
+}
+
+function solve() {
+  const lang = document.getElementById('lang').value;
+  const length = parseInt(document.getElementById('wordLength').value);
+  const candidates = WORDS[lang]?.[length] || [];
+
+  const guessLines = document.querySelectorAll('#guesses .guess-line');
+  const guesses = [];
+  guessLines.forEach(line => {
+    const id = parseInt(line.id.replace('guess-',''));
+    const data = getFeedback(id);
+    if (data.word.length === length) {
+      guesses.push(data);
+    }
+  });
+
+  if (!guesses.length) { alert('Tambahkan tebakan dulu.'); return; }
+
+  // Check all guesses have the right length
+  for (const g of guesses) {
+    if (g.word.length !== length) {
+      alert(`Tebakan "${g.word}" panjangnya ${g.word.length}, tapi panjang kata dipilih ${length}`);
+      return;
+    }
+  }
+
+  const results = [];
+  for (const target of candidates) {
+    // Try all 6 possible color mappings
+    let valid = false;
+    for (const mapping of MAPPINGS) {
+      let ok = true;
+      for (const g of guesses) {
+        if (!guessMatches(g.word, target, g.feedback, mapping)) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        valid = true;
+        break;
+      }
+    }
+    if (valid) results.push(target);
+  }
+
+  const out = document.getElementById('output');
+  out.innerHTML = `<div class="small">${results.length} kemungkinan ditemukan:</div>` + results.map(w => `<div class="candidate">${w}</div>`).join('');
+}
+</script>
+</body>
+</html>

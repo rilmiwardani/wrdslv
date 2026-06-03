@@ -84,6 +84,7 @@
                                 <button id="mode-konekdot-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Konekdot</button>
                                 <button id="mode-kasihpaham-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Kasih Paham</button>
                                 <button id="mode-acakolor-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Acakolor</button>
+                                <button id="mode-tigarahasia-btn" class="px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-bold transition-all text-slate-400 hover:text-white">Tiga Rahasia</button>
                             </div>
                         </div>
                         <div class="text-left sm:text-right flex-1">
@@ -186,7 +187,7 @@
 
                     <!-- Input Pencarian Saran & Filter Huruf Unik -->
                     <div class="flex flex-col sm:flex-row gap-2 relative z-10 mb-4 shrink-0">
-                        <input type="text" id="search-saran" placeholder="Cari kata spesifik di daftar ini..." class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono shadow-inner transition-colors" />
+                        <input type="text" id="search-saran" placeholder="Cari kata atau pola, misal: ???AH atau ?AH??" class="flex-1 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono shadow-inner transition-colors" />
                         <label class="flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-slate-800 transition-colors shrink-0">
                             <input type="checkbox" id="unique-letters-toggle" class="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-600 rounded focus:ring-emerald-500 cursor-pointer" />
                             <span class="text-xs font-bold text-slate-300 whitespace-nowrap select-none">Huruf Unik Saja</span>
@@ -380,6 +381,7 @@
         const modeKonekdotBtn = document.getElementById('mode-konekdot-btn');
         const modeKasihPahamBtn = document.getElementById('mode-kasihpaham-btn');
         const modeAcakolorBtn = document.getElementById('mode-acakolor-btn');
+        const modeTigaRahasiaBtn = document.getElementById('mode-tigarahasia-btn');
         const modeDesc = document.getElementById('mode-desc');
         const saranKataPanel = document.getElementById('saran-kata-panel');
         const saranKataGlow = document.getElementById('saran-kata-glow');
@@ -616,13 +618,14 @@
             modeKonekdotBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
             modeKasihPahamBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
             modeAcakolorBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
+            modeTigaRahasiaBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white';
             
             // Reset Container Classes
-            boardContainer.classList.remove('border-red-500/50', 'bg-red-900/10', 'border-indigo-500/50', 'bg-indigo-900/10', 'border-slate-700', 'bg-slate-900/40', 'border-pink-500/50', 'bg-pink-900/10', 'border-orange-500/50', 'bg-orange-900/10', 'border-slate-500/50', 'bg-slate-800/50', 'border-amber-500/50', 'bg-amber-900/10', 'border-teal-500/50', 'bg-teal-900/10', 'border-stone-500/50', 'bg-stone-900/10', 'border-lime-500/50', 'bg-lime-900/10', 'border-rose-500/50', 'bg-rose-900/10', 'border-fuchsia-500/50', 'bg-fuchsia-900/10', 'border-sky-500/50', 'bg-sky-900/10', 'border-cyan-500/50', 'bg-cyan-900/10');
-            saranKataPanel.classList.remove('border-red-500/30', 'ring-red-500/20', 'border-emerald-500/30', 'ring-emerald-500/20', 'border-indigo-500/30', 'ring-indigo-500/20', 'border-pink-500/30', 'ring-pink-500/20', 'border-orange-500/30', 'ring-orange-500/20', 'border-slate-500/30', 'ring-slate-500/20', 'border-amber-500/30', 'ring-amber-500/20', 'border-teal-500/30', 'ring-teal-500/20', 'border-stone-500/30', 'ring-stone-500/20', 'border-lime-500/30', 'ring-lime-500/20', 'border-rose-500/30', 'ring-rose-500/20', 'border-fuchsia-500/30', 'ring-fuchsia-500/20', 'border-sky-500/30', 'ring-sky-500/20', 'border-cyan-500/30', 'ring-cyan-500/20');
-            saranKataGlow.classList.remove('bg-red-500/5', 'bg-emerald-500/5', 'bg-indigo-500/5', 'bg-pink-500/5', 'bg-orange-500/5', 'bg-slate-500/5', 'bg-amber-500/5', 'bg-teal-500/5', 'bg-stone-500/5', 'bg-lime-500/5', 'bg-rose-500/5', 'bg-fuchsia-500/5', 'bg-sky-500/5', 'bg-cyan-500/5');
-            saranKataIcon.classList.remove('text-red-400', 'text-emerald-400', 'text-indigo-400', 'text-pink-400', 'text-orange-400', 'text-slate-400', 'text-amber-400', 'text-teal-400', 'text-stone-400', 'text-lime-400', 'text-rose-400', 'text-fuchsia-400', 'text-sky-400', 'text-cyan-400');
-            possibleCount.classList.remove('bg-red-500/20', 'text-red-400', 'border-red-500/40', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/40', 'bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500/40', 'bg-pink-500/20', 'text-pink-400', 'border-pink-500/40', 'bg-orange-500/20', 'text-orange-400', 'border-orange-500/40', 'bg-slate-500/20', 'text-slate-300', 'border-slate-500/40', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/40', 'bg-teal-500/20', 'text-teal-400', 'border-teal-500/40', 'bg-stone-500/20', 'text-stone-400', 'border-stone-500/40', 'bg-lime-500/20', 'text-lime-400', 'border-lime-500/40', 'bg-rose-500/20', 'text-rose-400', 'border-rose-500/40', 'bg-fuchsia-500/20', 'text-fuchsia-400', 'border-fuchsia-500/40', 'bg-sky-500/20', 'text-sky-400', 'border-sky-500/40', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/40');
+            boardContainer.classList.remove('border-red-500/50', 'bg-red-900/10', 'border-indigo-500/50', 'bg-indigo-900/10', 'border-slate-700', 'bg-slate-900/40', 'border-pink-500/50', 'bg-pink-900/10', 'border-orange-500/50', 'bg-orange-900/10', 'border-slate-500/50', 'bg-slate-800/50', 'border-amber-500/50', 'bg-amber-900/10', 'border-teal-500/50', 'bg-teal-900/10', 'border-stone-500/50', 'bg-stone-900/10', 'border-lime-500/50', 'bg-lime-900/10', 'border-rose-500/50', 'bg-rose-900/10', 'border-fuchsia-500/50', 'bg-fuchsia-900/10', 'border-sky-500/50', 'bg-sky-900/10', 'border-cyan-500/50', 'bg-cyan-900/10', 'border-violet-500/50', 'bg-violet-900/10');
+            saranKataPanel.classList.remove('border-red-500/30', 'ring-red-500/20', 'border-emerald-500/30', 'ring-emerald-500/20', 'border-indigo-500/30', 'ring-indigo-500/20', 'border-pink-500/30', 'ring-pink-500/20', 'border-orange-500/30', 'ring-orange-500/20', 'border-slate-500/30', 'ring-slate-500/20', 'border-amber-500/30', 'ring-amber-500/20', 'border-teal-500/30', 'ring-teal-500/20', 'border-stone-500/30', 'ring-stone-500/20', 'border-lime-500/30', 'ring-lime-500/20', 'border-rose-500/30', 'ring-rose-500/20', 'border-fuchsia-500/30', 'ring-fuchsia-500/20', 'border-sky-500/30', 'ring-sky-500/20', 'border-cyan-500/30', 'ring-cyan-500/20', 'border-violet-500/30', 'ring-violet-500/20');
+            saranKataGlow.classList.remove('bg-red-500/5', 'bg-emerald-500/5', 'bg-indigo-500/5', 'bg-pink-500/5', 'bg-orange-500/5', 'bg-slate-500/5', 'bg-amber-500/5', 'bg-teal-500/5', 'bg-stone-500/5', 'bg-lime-500/5', 'bg-rose-500/5', 'bg-fuchsia-500/5', 'bg-sky-500/5', 'bg-cyan-500/5', 'bg-violet-500/5');
+            saranKataIcon.classList.remove('text-red-400', 'text-emerald-400', 'text-indigo-400', 'text-pink-400', 'text-orange-400', 'text-slate-400', 'text-amber-400', 'text-teal-400', 'text-stone-400', 'text-lime-400', 'text-rose-400', 'text-fuchsia-400', 'text-sky-400', 'text-cyan-400', 'text-violet-400');
+            possibleCount.classList.remove('bg-red-500/20', 'text-red-400', 'border-red-500/40', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/40', 'bg-indigo-500/20', 'text-indigo-400', 'border-indigo-500/40', 'bg-pink-500/20', 'text-pink-400', 'border-pink-500/40', 'bg-orange-500/20', 'text-orange-400', 'border-orange-500/40', 'bg-slate-500/20', 'text-slate-300', 'border-slate-500/40', 'bg-amber-500/20', 'text-amber-400', 'border-amber-500/40', 'bg-teal-500/20', 'text-teal-400', 'border-teal-500/40', 'bg-stone-500/20', 'text-stone-400', 'border-stone-500/40', 'bg-lime-500/20', 'text-lime-400', 'border-lime-500/40', 'bg-rose-500/20', 'text-rose-400', 'border-rose-500/40', 'bg-fuchsia-500/20', 'text-fuchsia-400', 'border-fuchsia-500/40', 'bg-sky-500/20', 'text-sky-400', 'border-sky-500/40', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/40', 'bg-violet-500/20', 'text-violet-400', 'border-violet-500/40');
             
             sekolorPanel.classList.add('hidden');
             sekolorHardMapping.classList.add('hidden');
@@ -821,6 +824,17 @@
                 saranKataGlow.classList.add('bg-cyan-500/5');
                 saranKataIcon.classList.add('text-cyan-400');
                 possibleCount.classList.add('bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/40');
+            } else if (mode === 'tigarahasia') {
+                guessInputContainer.classList.remove('hidden');
+                modeTigaRahasiaBtn.className = 'px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-violet-500 text-white shadow-lg shadow-violet-500/30';
+                modeDesc.innerHTML = '<span class="text-violet-400">*Tiga Rahasia: Cari 3 huruf rahasia. Centang kotak warna jika game menandai benar.</span>';
+                boardInstructions.innerHTML = '*Klik kotak warna di samping tebakan untuk mengatur status (Centang = Ada, Kosong = Tidak Ada).<br/>*Kata target adalah kata yang mengandung 3 huruf rahasia tersebut.' + instructionSuffix;
+                
+                boardContainer.classList.add('border-violet-500/50', 'bg-violet-900/10');
+                saranKataPanel.classList.add('border-violet-500/30', 'ring-violet-500/20');
+                saranKataGlow.classList.add('bg-violet-500/5');
+                saranKataIcon.classList.add('text-violet-400');
+                possibleCount.classList.add('bg-violet-500/20', 'text-violet-400', 'border-violet-500/40');
             }
             
             renderBoard(); 
@@ -838,9 +852,9 @@
         modePepetTerusBtn.addEventListener('click', () => setGameMode('pepetterus'));
         modeSekolorBtn.addEventListener('click', () => setGameMode('sekolor'));
         modeSekolorHardBtn.addEventListener('click', () => setGameMode('sekolor-hard'));
-        modeKonekdotBtn.addEventListener('click', () => setGameMode('konekdot'));
         modeKasihPahamBtn.addEventListener('click', () => setGameMode('kasihpaham'));
         modeAcakolorBtn.addEventListener('click', () => setGameMode('acakolor'));
+        modeTigaRahasiaBtn.addEventListener('click', () => setGameMode('tigarahasia'));
 
         // --- RENDER SEKOLOR PATTERN BUILDER ---
         function renderSekolorPattern() {
@@ -1062,6 +1076,8 @@
                         else if (akColor === 'sky') bgColor = 'bg-sky-400 border-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.5)] text-slate-900';
                         else if (akColor === 'white') bgColor = 'bg-slate-100 border-white shadow-[0_0_8px_rgba(255,255,255,0.5)] text-slate-900';
                         else bgColor = 'bg-slate-600 border-slate-500 text-slate-400 opacity-80'; // empty
+                    } else if (gameMode === 'tigarahasia') {
+                        bgColor = 'bg-slate-600 border-slate-500 text-white';
                     } else if (gameMode !== 'buta' && gameMode !== 'matabatin') {
                         if (status === 'yellow') bgColor = 'bg-yellow-500 border-yellow-400 shadow-lg shadow-yellow-500/20 text-white';
                         if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-lg shadow-emerald-500/20 text-white';
@@ -1084,7 +1100,7 @@
                     let displayContent = (gameMode === 'ketempelan' && guess.pairs) ? guess.pairs[colIdx] : char;
                     btn.innerHTML = `<span class="${displayContent.length > 1 ? 'tracking-tighter text-[0.8em]' : ''}">${displayContent}</span>`;
                     
-                    if (gameMode !== 'buta' && gameMode !== 'matabatin') {
+                    if (gameMode !== 'buta' && gameMode !== 'matabatin' && gameMode !== 'tigarahasia') {
                         btn.onclick = () => toggleStatus(rowIdx, colIdx);
                         btn.oncontextmenu = (e) => {
                             e.preventDefault();
@@ -1183,6 +1199,33 @@
                     }
                     row.appendChild(counterArea);
                 }
+                // Area Counters (Khusus Mode Tiga Rahasia)
+                else if (gameMode === 'tigarahasia') {
+                    const counterArea = document.createElement('div');
+                    counterArea.className = 'flex gap-1 ml-1 sm:ml-2 shrink-0 bg-slate-900/50 p-1 sm:p-1.5 rounded-lg border border-slate-700';
+
+                    const colors = ['bg-sky-500', 'bg-yellow-400', 'bg-purple-500'];
+                    const borders = ['border-sky-400', 'border-yellow-300', 'border-purple-400'];
+                    const titles = ['Biru', 'Kuning', 'Ungu'];
+
+                    for(let i=0; i<3; i++) {
+                        const btn = document.createElement('button');
+                        const isChecked = guess.trChecks[i];
+                        
+                        btn.className = `w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md flex items-center justify-center font-bold text-xs sm:text-sm transition-all shadow-sm ${isChecked ? colors[i] + ' border-2 ' + borders[i] + ' text-slate-900 shadow-[0_0_8px_rgba(255,255,255,0.3)]' : 'bg-slate-800 border border-slate-600 text-slate-500 hover:bg-slate-700'}`;
+                        btn.innerHTML = isChecked ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
+                        btn.title = `Klik untuk toggle huruf rahasia ${titles[i]}`;
+                        
+                        btn.onclick = () => {
+                            guesses[rowIdx].isEvaluated = true;
+                            guesses[rowIdx].trChecks[i] = !guesses[rowIdx].trChecks[i];
+                            renderBoard();
+                            updateUI();
+                        };
+                        counterArea.appendChild(btn);
+                    }
+                    row.appendChild(counterArea);
+                }
 
                 // Tombol aksi untuk toggle status Evaluasi kata
                 let evalColorClass = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400';
@@ -1197,6 +1240,7 @@
                 else if (gameMode === 'jagajarak') evalColorClass = 'bg-rose-500/20 border-rose-500/50 text-rose-400';
                 else if (gameMode === 'kasihpaham') evalColorClass = 'bg-fuchsia-500/20 border-fuchsia-500/50 text-fuchsia-400';
                 else if (gameMode === 'acakolor') evalColorClass = 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400';
+                else if (gameMode === 'tigarahasia') evalColorClass = 'bg-violet-500/20 border-violet-500/50 text-violet-400';
                 
                 const toggleEvalBtn = document.createElement('button');
                 toggleEvalBtn.className = `ml-1 sm:ml-2 shrink-0 flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl border-2 transition-all ${guess.isEvaluated ? evalColorClass : 'bg-slate-800 border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-white'}`;
@@ -1318,6 +1362,7 @@
             let newStatuses = Array(currentWordLen).fill('gray');
             let newKpColors = Array(currentWordLen).fill('empty');
             let newAkColors = Array(currentWordLen).fill('empty');
+            let newTrChecks = [false, false, false];
             
             if (gameMode === 'normal') {
                 const evaluatedGuesses = guesses.filter(g => g.isEvaluated);
@@ -1337,6 +1382,7 @@
                 statuses: newStatuses,
                 kpColors: newKpColors,
                 akColors: newAkColors,
+                trChecks: newTrChecks,
                 greenCount: 0,
                 yellowCount: 0,
                 mbCounts: [0, 0, currentWordLen], 
@@ -1871,12 +1917,129 @@
                 isStart = !hasAtas && !hasBawah && !hasContains;
             }
 
+            // --- KHUSUS MODE TIGA RAHASIA ---
+            if (gameMode === 'tigarahasia') {
+                const activeGuessesTR = guesses.filter(g => g.isEvaluated);
+                let blueCandidates = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+                let yellowCandidates = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+                let purpleCandidates = new Set('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+
+                for (let guess of activeGuessesTR) {
+                    let guessLetters = new Set(guess.word.split(''));
+                    if (guess.trChecks[0]) blueCandidates = new Set([...blueCandidates].filter(x => guessLetters.has(x)));
+                    else blueCandidates = new Set([...blueCandidates].filter(x => !guessLetters.has(x)));
+                    
+                    if (guess.trChecks[1]) yellowCandidates = new Set([...yellowCandidates].filter(x => guessLetters.has(x)));
+                    else yellowCandidates = new Set([...yellowCandidates].filter(x => !guessLetters.has(x)));
+                    
+                    if (guess.trChecks[2]) purpleCandidates = new Set([...purpleCandidates].filter(x => guessLetters.has(x)));
+                    else purpleCandidates = new Set([...purpleCandidates].filter(x => !guessLetters.has(x)));
+                }
+
+                // Render Candidates
+                let htmlOut = `
+                    <div class="flex gap-2 mb-4">
+                        <div class="flex-1 bg-sky-900/30 border border-sky-500/50 p-2 rounded-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-8 h-8 bg-sky-500/10 rounded-bl-full"></div>
+                            <div class="text-[9px] sm:text-[10px] text-sky-400 font-bold mb-1 tracking-wider">BIRU <span class="opacity-70 font-normal">(${blueCandidates.size})</span></div>
+                            <div class="font-mono text-[10px] sm:text-xs text-slate-200 break-words leading-tight">${[...blueCandidates].join(' ')}</div>
+                        </div>
+                        <div class="flex-1 bg-yellow-900/30 border border-yellow-500/50 p-2 rounded-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-8 h-8 bg-yellow-500/10 rounded-bl-full"></div>
+                            <div class="text-[9px] sm:text-[10px] text-yellow-400 font-bold mb-1 tracking-wider">KUNING <span class="opacity-70 font-normal">(${yellowCandidates.size})</span></div>
+                            <div class="font-mono text-[10px] sm:text-xs text-slate-200 break-words leading-tight">${[...yellowCandidates].join(' ')}</div>
+                        </div>
+                        <div class="flex-1 bg-purple-900/30 border border-purple-500/50 p-2 rounded-lg relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-8 h-8 bg-purple-500/10 rounded-bl-full"></div>
+                            <div class="text-[9px] sm:text-[10px] text-purple-400 font-bold mb-1 tracking-wider">UNGU <span class="opacity-70 font-normal">(${purpleCandidates.size})</span></div>
+                            <div class="font-mono text-[10px] sm:text-xs text-slate-200 break-words leading-tight">${[...purpleCandidates].join(' ')}</div>
+                        </div>
+                    </div>
+                `;
+
+                let targetWords = [];
+                let exploreWords = [];
+
+                dictForCurrentLength.forEach(w => {
+                    let wUpper = w.toUpperCase();
+                    let letters = new Set(wUpper.split(''));
+                    
+                    let hasBlue = [...blueCandidates].some(c => letters.has(c));
+                    let hasYellow = [...yellowCandidates].some(c => letters.has(c));
+                    let hasPurple = [...purpleCandidates].some(c => letters.has(c));
+                    
+                    if (hasBlue && hasYellow && hasPurple) {
+                        targetWords.push(wUpper);
+                    }
+
+                    let score = 0;
+                    if (blueCandidates.size > 1) score += [...blueCandidates].filter(c => letters.has(c)).length;
+                    if (yellowCandidates.size > 1) score += [...yellowCandidates].filter(c => letters.has(c)).length;
+                    if (purpleCandidates.size > 1) score += [...purpleCandidates].filter(c => letters.has(c)).length;
+                    
+                    score -= (wUpper.length - letters.size) * 0.5;
+                    if (score > 0) exploreWords.push({word: wUpper, score: score});
+                });
+
+                // Apply Filters for Tiga Rahasia (mendukung wildcard ?)
+                const searchValTR = searchSaranInput.value.toUpperCase().trim();
+                if (searchValTR) {
+                    const matchPattern = (word, pattern) => {
+                        if (!pattern.includes('?')) return word.includes(pattern);
+                        if (word.length !== pattern.length) return false;
+                        for (let i = 0; i < pattern.length; i++) {
+                            if (pattern[i] !== '?' && pattern[i] !== word[i]) return false;
+                        }
+                        return true;
+                    };
+                    targetWords = targetWords.filter(w => matchPattern(w, searchValTR));
+                    exploreWords = exploreWords.filter(obj => matchPattern(obj.word, searchValTR));
+                }
+
+                if (isUniqueLettersOnly) {
+                    targetWords = targetWords.filter(w => new Set(w.split('')).size === w.length);
+                    exploreWords = exploreWords.filter(obj => new Set(obj.word.split('')).size === obj.word.length);
+                }
+
+                exploreWords.sort((a, b) => b.score - a.score);
+                exploreWords = exploreWords.slice(0, 100);
+
+                htmlOut += '<div class="mb-4"><div class="w-full text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2 border-b border-emerald-500/30 pb-1">🎯 KATA TARGET (MENGANDUNG 3 WARNA)</div><div class="flex flex-wrap gap-2 items-center">';
+                targetWords.slice(0, 100).forEach(w => {
+                    htmlOut += `<span class="bg-emerald-500/20 text-emerald-300 px-2 py-1.5 rounded-lg font-mono text-xs border border-emerald-500/50 hover:border-emerald-400 shadow-sm font-bold flex items-center transition-all cursor-default">${w}</span>`;
+                });
+                if (targetWords.length === 0) htmlOut += '<span class="text-slate-500 text-xs">Belum ada kata target yang pasti.</span>';
+                if (targetWords.length > 100) htmlOut += `<span class="text-slate-500 text-xs py-1.5 px-2 font-mono">... (+${targetWords.length - 100} lainnya)</span>`;
+                htmlOut += '</div></div>';
+
+                if (blueCandidates.size > 1 || yellowCandidates.size > 1 || purpleCandidates.size > 1) {
+                    htmlOut += '<div><div class="w-full text-xs font-bold text-yellow-400 uppercase tracking-widest mb-2 border-b border-yellow-500/30 pb-1">🔍 KATA EKSPLORASI (UNTUK MENCARI HURUF)</div><div class="flex flex-wrap gap-2 items-center">';
+                    exploreWords.forEach(obj => {
+                        htmlOut += `<span class="bg-slate-800 text-slate-200 px-2 py-1.5 rounded-lg font-mono text-xs border border-slate-700 hover:border-slate-500 shadow-sm cursor-default transition-all">${obj.word}</span>`;
+                    });
+                    if (exploreWords.length === 0) htmlOut += '<span class="text-slate-500 text-xs">Tidak ada kata eksplorasi yang valid.</span>';
+                    htmlOut += '</div></div>';
+                }
+
+                possibleCount.textContent = `${targetWords.length} Target`;
+                possibleWordsContainer.innerHTML = htmlOut;
+                return;
+            }
+
             let possibleWordsObjs = getPossibleWords();
             
-            // --- FILTER PENCARIAN SARAN KATA ---
+            // --- FILTER PENCARIAN SARAN KATA (mendukung wildcard ?) ---
             const searchVal = searchSaranInput.value.toUpperCase().trim();
             if (searchVal) {
-                possibleWordsObjs = possibleWordsObjs.filter(obj => obj.word.includes(searchVal));
+                const matchPattern = (word, pattern) => {
+                    if (!pattern.includes('?')) return word.includes(pattern);
+                    if (word.length !== pattern.length) return false;
+                    for (let i = 0; i < pattern.length; i++) {
+                        if (pattern[i] !== '?' && pattern[i] !== word[i]) return false;
+                    }
+                    return true;
+                };
+                possibleWordsObjs = possibleWordsObjs.filter(obj => matchPattern(obj.word, searchVal));
             }
 
             // --- FILTER HURUF UNIK (NO REPEAT LETTERS) ---
