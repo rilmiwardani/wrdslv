@@ -958,7 +958,7 @@
         }
 
         // --- RENDER PAPAN TEBAKAN ---
-        function renderBoard() {
+        function renderBoard(simulatedTargetWord = null) {
             boardContainer.innerHTML = '';
             
             if (gameMode === 'pepetterus') {
@@ -1051,15 +1051,25 @@
                 
                 const currentWordLen = guess.word.length;
                 
+                let simStatuses = null;
+                if (simulatedTargetWord && simulatedTargetWord.length === currentWordLen) {
+                    simStatuses = simulateWordle(guess.word.toUpperCase(), simulatedTargetWord.toUpperCase());
+                }
+                
                 guess.word.split('').forEach((char, colIdx) => {
-                    const status = guess.statuses[colIdx];
+                    const status = simStatuses ? simStatuses[colIdx] : guess.statuses[colIdx];
                     const kpColor = guess.kpColors[colIdx];
                     const akColor = guess.akColors[colIdx];
                     const btn = document.createElement('button');
                     
                     let bgColor = 'bg-slate-600 border-slate-500 text-white';
                     
-                    if (gameMode === 'jagajarak') {
+                    if (simStatuses) {
+                        // Tampilan Simulasi Khusus
+                        if (status === 'yellow') bgColor = 'bg-yellow-500 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)] text-white ring-2 ring-yellow-400';
+                        else if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.6)] text-white ring-2 ring-emerald-400';
+                        else bgColor = 'bg-slate-700 border-slate-600 text-slate-400 opacity-90'; 
+                    } else if (gameMode === 'jagajarak') {
                         if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)] text-white';
                         else if (status === 'red') bgColor = 'bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.5)] text-white';
                         else if (status === 'orange') bgColor = 'bg-orange-500 border-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.5)] text-white';
@@ -1078,7 +1088,7 @@
                         else bgColor = 'bg-slate-600 border-slate-500 text-slate-400 opacity-80'; // empty
                     } else if (gameMode === 'tigarahasia') {
                         bgColor = 'bg-slate-600 border-slate-500 text-white';
-                    } else if (gameMode !== 'buta' && gameMode !== 'matabatin') {
+                    } else {
                         if (status === 'yellow') bgColor = 'bg-yellow-500 border-yellow-400 shadow-lg shadow-yellow-500/20 text-white';
                         if (status === 'green') bgColor = 'bg-emerald-500 border-emerald-400 shadow-lg shadow-emerald-500/20 text-white';
                     }
@@ -1095,7 +1105,8 @@
                         boxSize = 'w-14 sm:w-16 aspect-square text-2xl sm:text-3xl rounded-xl border-2';
                     }
                     
-                    btn.className = `${boxSize} flex items-center justify-center font-bold uppercase transition-all ${gameMode === 'buta' || gameMode === 'matabatin' ? 'cursor-default opacity-80' : 'transform hover:scale-105 active:scale-95'} ${bgColor} shrink-1 min-w-0 p-0 overflow-hidden`;
+                    let animClass = simStatuses ? 'animate-pulse' : (gameMode === 'buta' || gameMode === 'matabatin' ? 'cursor-default opacity-80' : 'transform hover:scale-105 active:scale-95');
+                    btn.className = `${boxSize} flex items-center justify-center font-bold uppercase transition-all ${animClass} ${bgColor} shrink-1 min-w-0 p-0 overflow-hidden`;
                     
                     let displayContent = (gameMode === 'ketempelan' && guess.pairs) ? guess.pairs[colIdx] : char;
                     btn.innerHTML = `<span class="${displayContent.length > 1 ? 'tracking-tighter text-[0.8em]' : ''}">${displayContent}</span>`;
@@ -1160,9 +1171,57 @@
                     const counterArea = document.createElement('div');
                     counterArea.className = 'flex gap-1 ml-1 sm:ml-2 shrink-0 bg-slate-900/50 p-1 sm:p-1.5 rounded-lg border border-slate-700';
 
+                    let simMbColors = null;
+                    if (simStatuses) {
+                        let simGreenCount = 0;
+                        let simYellowCount = 0;
+                        for (let j = 0; j < currentWordLen; j++) {
+                            if (simStatuses[j] === 'green') simGreenCount++;
+                            if (simStatuses[j] === 'yellow') simYellowCount++;
+                        }
+                        const permutations = [
+                            ['green', 'yellow', 'gray'],
+                            ['green', 'gray', 'yellow'],
+                            ['yellow', 'green', 'gray'],
+                            ['yellow', 'gray', 'green'],
+                            ['gray', 'green', 'yellow'],
+                            ['gray', 'yellow', 'green']
+                        ];
+                        let minPermError = Infinity;
+                        permutations.forEach(perm => {
+                            let assumedGreenCount = 0;
+                            let assumedYellowCount = 0;
+                            for(let i=0; i<3; i++) {
+                                if (perm[i] === 'green') assumedGreenCount = guess.mbCounts[i];
+                                if (perm[i] === 'yellow') assumedYellowCount = guess.mbCounts[i];
+                            }
+                            let err = Math.abs(simGreenCount - assumedGreenCount) + Math.abs(simYellowCount - assumedYellowCount);
+                            if (err < minPermError) {
+                                minPermError = err;
+                                simMbColors = perm;
+                            }
+                        });
+                        if (minPermError > 0) simMbColors = null; 
+                    }
+
                     for(let i=0; i<3; i++) {
                         const btn = document.createElement('button');
-                        btn.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center hover:bg-slate-600 transition-colors shadow-sm';
+                        let colBg = 'bg-slate-700 text-slate-200 hover:bg-slate-600';
+                        let isSimulated = false;
+                        
+                        if (simMbColors) {
+                            isSimulated = true;
+                            if (simMbColors[i] === 'green') colBg = 'bg-emerald-500 text-white ring-2 ring-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.6)]';
+                            else if (simMbColors[i] === 'yellow') colBg = 'bg-yellow-500 text-white ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]';
+                            else colBg = 'bg-red-500 text-white ring-2 ring-red-400 shadow-[0_0_15px_rgba(239,68,68,0.6)] opacity-90'; 
+                        } else if (guess.mbColors && guess.mbColors[i]) {
+                            if (guess.mbColors[i] === 'green') colBg = 'bg-emerald-500 text-white hover:bg-emerald-400';
+                            else if (guess.mbColors[i] === 'yellow') colBg = 'bg-yellow-500 text-white hover:bg-yellow-400';
+                            else if (guess.mbColors[i] === 'gray') colBg = 'bg-red-500 text-white hover:bg-red-400 opacity-90';
+                        }
+                        
+                        let animClass = isSimulated ? 'animate-pulse' : '';
+                        btn.className = `w-6 h-6 sm:w-8 sm:h-8 rounded sm:rounded-md font-bold text-xs sm:text-sm flex items-center justify-center transition-all shadow-sm ${animClass} ${colBg}`;
                         btn.textContent = guess.mbCounts[i];
                         btn.title = `Klik untuk atur skor kolom ${i+1}`;
                         btn.onclick = () => {
@@ -2116,6 +2175,88 @@
                     if (a.errorCount !== b.errorCount) return a.errorCount - b.errorCount;
                     return b.score - a.score;
                 });
+
+                // --- AUTO DEDUCE COLORS FOR BUTA & MATABATIN ---
+                if ((gameMode === 'buta' || gameMode === 'matabatin') && guesses.length > 0) {
+                    let validWords = possibleWordsObjs.filter(o => o.errorCount === 0).map(o => o.word.toUpperCase());
+                    let colorsChanged = false;
+                    
+                    guesses.forEach(guess => {
+                        if (validWords.length > 0) {
+                            for (let i = 0; i < guess.word.length; i++) {
+                                let expectedColor = simulateWordle(guess.word.toUpperCase(), validWords[0])[i];
+                                let allAgree = true;
+                                for (let j = 1; j < validWords.length; j++) {
+                                    if (simulateWordle(guess.word.toUpperCase(), validWords[j])[i] !== expectedColor) {
+                                        allAgree = false; break;
+                                    }
+                                }
+                                let finalColor = allAgree ? expectedColor : 'gray';
+                                if (guess.statuses[i] !== finalColor) {
+                                    guess.statuses[i] = finalColor;
+                                    colorsChanged = true;
+                                }
+                            }
+                            
+                            if (gameMode === 'matabatin') {
+                                const permutations = [
+                                    ['green', 'yellow', 'gray'], ['green', 'gray', 'yellow'],
+                                    ['yellow', 'green', 'gray'], ['yellow', 'gray', 'green'],
+                                    ['gray', 'green', 'yellow'], ['gray', 'yellow', 'green']
+                                ];
+                                let validPermsForGuess = [];
+                                
+                                permutations.forEach(perm => {
+                                    let permValid = true;
+                                    for (let w of validWords) {
+                                        let simGreen = 0, simYellow = 0;
+                                        let realStatuses = simulateWordle(guess.word.toUpperCase(), w);
+                                        for(let r of realStatuses) { if(r === 'green') simGreen++; else if(r === 'yellow') simYellow++; }
+                                        
+                                        let asGreen = 0, asYellow = 0;
+                                        for(let c=0; c<3; c++) {
+                                            if (perm[c] === 'green') asGreen = guess.mbCounts[c];
+                                            if (perm[c] === 'yellow') asYellow = guess.mbCounts[c];
+                                        }
+                                        if (simGreen !== asGreen || simYellow !== asYellow) {
+                                            permValid = false; break;
+                                        }
+                                    }
+                                    if (permValid) validPermsForGuess.push(perm);
+                                });
+                                
+                                let bestMbColors = ['gray', 'gray', 'gray'];
+                                if (validPermsForGuess.length === 1) {
+                                    bestMbColors = [...validPermsForGuess[0]];
+                                } else if (validPermsForGuess.length > 1) {
+                                    for(let c=0; c<3; c++) {
+                                        let color = validPermsForGuess[0][c];
+                                        let allColAgree = true;
+                                        for(let p=1; p<validPermsForGuess.length; p++) {
+                                            if (validPermsForGuess[p][c] !== color) { allColAgree = false; break; }
+                                        }
+                                        if (allColAgree) bestMbColors[c] = color;
+                                    }
+                                }
+                                if (!guess.mbColors || guess.mbColors.join() !== bestMbColors.join()) {
+                                    guess.mbColors = bestMbColors;
+                                    colorsChanged = true;
+                                }
+                            }
+                        } else {
+                            for (let i = 0; i < guess.word.length; i++) {
+                                if (guess.statuses[i] !== 'gray') { guess.statuses[i] = 'gray'; colorsChanged = true; }
+                            }
+                            if (gameMode === 'matabatin' && guess.mbColors && guess.mbColors.join() !== 'gray,gray,gray') {
+                                guess.mbColors = ['gray','gray','gray']; colorsChanged = true;
+                            }
+                        }
+                    });
+                    
+                    if (colorsChanged) {
+                        renderBoard();
+                    }
+                }
                 // ------------------------------------------
 
                 const flexWrap = document.createElement('div');
@@ -2472,7 +2613,7 @@
             candidateStr = candidateStr.toUpperCase();
             if (wordLength !== 'ALL' && candidateStr.length !== wordLength) return null;
             if (guesses.length === 0) return null;
-            if (gameMode !== 'normal' && gameMode !== 'buta') return null;
+            if (gameMode !== 'normal' && gameMode !== 'buta' && gameMode !== 'tipu' && gameMode !== 'matabatin') return null;
             
             const activeGuesses = guesses.filter(g => !g.disabled);
             if (activeGuesses.length === 0) return null;
@@ -2513,6 +2654,35 @@
                     }
                 }
                 return `<span class="text-emerald-400 font-bold">✅ Mantap! Bisa Dipakai!</span><br>Kata "<b>${candidateStr}</b>" ini udah pas banget sama semua syarat <b>Hijau</b> dan <b>Kuning</b> yang kita punya. Gasss input!`;
+            }
+            
+            if (gameMode === 'tipu') {
+                let validMessages = [];
+                for (let rowIdx = 0; rowIdx < activeGuesses.length; rowIdx++) {
+                    let guess = activeGuesses[rowIdx];
+                    if (candidateStr.length !== guess.word.length) continue;
+                    
+                    let inputStatuses = guess.statuses; 
+                    let realStatuses = simulateWordle(guess.word.toUpperCase(), candidateStr);
+                    
+                    for (let i = 0; i < guess.word.length; i++) {
+                        if (realStatuses[i] === inputStatuses[i]) {
+                            let expected = inputStatuses[i]; // Warna di layar (bohong)
+                            let char = guess.word[i].toUpperCase();
+                            let pos = i + 1;
+                            let baris = rowIdx + 1;
+                            
+                            let warna = expected === 'green' ? 'Hijau' : (expected === 'yellow' ? 'Kuning' : 'Abu-abu');
+                            let textColor = expected === 'green' ? 'text-emerald-400' : (expected === 'yellow' ? 'text-yellow-400' : 'text-slate-400');
+                            
+                            return `<span class="text-red-400 font-bold">❌ Nggak Bisa Dipakai (Bukan Tipu)!</span><br>Kalau beneran jawabannya "<b>${candidateStr}</b>", berarti di baris ${baris} kotak ke-${pos} ('<b>${char}</b>') warna aslinya emang beneran <b class="${textColor}">${warna}</b>.<br><br>Padahal ini mode <b>Tukang Tipu</b>! Warna di layar kan udah <b class="${textColor}">${warna}</b>, masa warna aslinya beneran sama? Harus <b>100% bohong</b> dong! Cari kata lain ya!`;
+                        }
+                    }
+                    validMessages.push(`<b>Baris ${rowIdx + 1} ("${guess.word.toUpperCase()}")</b>: Semua warna aslinya 100% beda dari layar!`);
+                }
+                if (validMessages.length > 0) {
+                    return `<span class="text-emerald-400 font-bold">✅ Valid Banget Buat Tipu-Tipu!</span><br>Kata "<b>${candidateStr}</b>" ini cocok. Kalau jawabannya ini, terbukti:<br><br>${validMessages.map(msg => '👉 ' + msg).join('<br>')} <br><br>Gasss! Semuanya berhasil kita tipu!`;
+                }
             }
             
             if (gameMode === 'buta') {
@@ -2568,6 +2738,69 @@
                 }
             }
             
+            if (gameMode === 'matabatin') {
+                let validMessages = [];
+                const permutations = [
+                    ['green', 'yellow', 'gray'],
+                    ['green', 'gray', 'yellow'],
+                    ['yellow', 'green', 'gray'],
+                    ['yellow', 'gray', 'green'],
+                    ['gray', 'green', 'yellow'],
+                    ['gray', 'yellow', 'green']
+                ];
+
+                for (let rowIdx = 0; rowIdx < activeGuesses.length; rowIdx++) {
+                    let guess = activeGuesses[rowIdx];
+                    if (candidateStr.length !== guess.word.length) continue;
+                    
+                    let guessWord = guess.word.toUpperCase();
+                    let realStatuses = simulateWordle(guessWord, candidateStr);
+                    
+                    let simGreenCount = 0;
+                    let simYellowCount = 0;
+                    for (let i = 0; i < guessWord.length; i++) {
+                        if (realStatuses[i] === 'green') simGreenCount++;
+                        if (realStatuses[i] === 'yellow') simYellowCount++;
+                    }
+
+                    let minPermError = Infinity;
+                    let bestPerm = null;
+
+                    permutations.forEach(perm => {
+                        let assumedGreenCount = 0;
+                        let assumedYellowCount = 0;
+                        for(let i=0; i<3; i++) {
+                            if (perm[i] === 'green') assumedGreenCount = guess.mbCounts[i];
+                            if (perm[i] === 'yellow') assumedYellowCount = guess.mbCounts[i];
+                        }
+                        
+                        let err = Math.abs(simGreenCount - assumedGreenCount) + Math.abs(simYellowCount - assumedYellowCount);
+                        if (err < minPermError) {
+                            minPermError = err;
+                            bestPerm = perm;
+                        }
+                    });
+
+                    if (minPermError > 0) {
+                        let baris = rowIdx + 1;
+                        let skorLayar = guess.mbCounts.join(' | ');
+                        return `<span class="text-red-400 font-bold">❌ Nggak Tembus Mata Batinnya!</span><br>Kalau jawabannya beneran "<b>${candidateStr}</b>", berarti tebakan di baris ${baris} ("<b>${guessWord}</b>") harusnya ngasilin <b>${simGreenCount} Hijau & ${simYellowCount} Kuning</b>.<br><br>Padahal skor di layar itu [<b>${skorLayar}</b>]. Kita udah coba acak 6 kombinasi posisinya, tapi tetep aja <b>nggak ada satupun kombinasi</b> yang pas sama ${simGreenCount} Hijau & ${simYellowCount} Kuning! Artinya kata ini otomatis gagal.`;
+                    } else {
+                        let baris = rowIdx + 1;
+                        let colMatch = [];
+                        for(let i=0; i<3; i++) {
+                            if (bestPerm[i] === 'green') colMatch.push(`Kolom ${i+1} = Hijau`);
+                            if (bestPerm[i] === 'yellow') colMatch.push(`Kolom ${i+1} = Kuning`);
+                        }
+                        if (colMatch.length === 0) colMatch.push('Semua kolom = Abu-abu');
+                        validMessages.push(`<b>Baris ${baris} ("${guessWord}")</b>: Cocok dengan kombinasi tebakan (${colMatch.join(', ')}).`);
+                    }
+                }
+                if (validMessages.length > 0) {
+                    return `<span class="text-emerald-400 font-bold">✅ Nyambung sama Mata Batin!</span><br>Kata "<b>${candidateStr}</b>" ini masuk akal. Kombinasi angkanya cocok dengan skor di layar:<br><br>${validMessages.map(msg => '👉 ' + msg).join('<br>')} <br><br>Gasss input!`;
+                }
+            }
+            
             return null;
         }
 
@@ -2585,11 +2818,14 @@
             
             // Host Explainer Logic
             const explainerDiv = document.getElementById('guess-explainer');
+            let isSimulating = false;
+            
             if (isLengthValid && explainerDiv) {
                 const explanation = explainWordValidity(cleanedValue);
                 if (explanation) {
                     explainerDiv.innerHTML = explanation;
                     explainerDiv.classList.remove('hidden');
+                    isSimulating = true;
                 } else {
                     explainerDiv.classList.add('hidden');
                     explainerDiv.innerHTML = '';
@@ -2598,6 +2834,8 @@
                 explainerDiv.classList.add('hidden');
                 explainerDiv.innerHTML = '';
             }
+            
+            renderBoard(isSimulating ? cleanedValue : null);
         }
 
         guessInput.addEventListener('input', checkGuessInput);
